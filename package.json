@@ -1,0 +1,20 @@
+{
+  "name": "central-ia-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Site estático da Central de IA dos assessores: catálogo de apps, conectores, skills, agentes, prompts e tutoriais.",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node generator/serve.js",
+    "build": "node generator/build.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "dependencies": {
+    "marked": "18.0.14",
+    "yaml": "2.9.1"
+  },
+  "license": "MIT"
+}

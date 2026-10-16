@@ -1,0 +1,21 @@
+{
+  "version": "0.3.2",
+  "publishedAt": "2026-10-16T12:00:00.000Z",
+  "downloadPage": "https://jpbazaboy.github.io/foster-ia/apps/fostermcp/",
+  "windows": {
+    "url": "https://github.com/JPBazaBoy/foster-ia/releases/download/v0.3.2/FosterMCP-Windows.exe",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "sizeBytes": 143654912
+  },
+  "mac": {
+    "url": "https://github.com/JPBazaBoy/foster-ia/releases/download/v0.3.2/FosterMCP-Mac.dmg",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "sizeBytes": 168820736
+  },
+  "notes": [
+    "Exemplo para a prévia: estes dados são substituídos pelo scripts/site-release.js na publicação.",
+    "O WhatsApp volta a mostrar o QR code para parear.",
+    "O app de Mac abre pelo Abrir Mesmo Assim.",
+    "Atlas mais simples e botão Copiar diagnóstico na Ajuda."
+  ]
+}

@@ -1,0 +1,4 @@
+- **No seu computador:** os dados do Atlas e das conversas do WhatsApp que você escolher ficam numa pasta sua. Não existe servidor central nem base do escritório.
+- **E-mail e agenda:** consultados na hora, direto na Microsoft, e não ficam guardados no computador.
+- **O que vai para a IA:** quando você faz uma pergunta, o assistente recebe só o resultado daquela consulta. Esse resultado segue as regras do serviço de IA que você usa: Anthropic, no Claude, ou OpenAI, no ChatGPT.
+- **Senhas e acessos:** ficam num cofre protegido no seu computador e nunca vão para os registros, para o diagnóstico nem para a IA.
