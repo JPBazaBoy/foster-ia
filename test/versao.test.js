@@ -1,12 +1,14 @@
-import test from 'node:test';
+import test, {after} from 'node:test';
 import assert from 'node:assert/strict';
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {checkFeed} from '../generator/feed.js';
 import {loadConfig} from '../generator/site-config.js';
-import {SITE_ROOT, EXAMPLE_FEED, loadFeed, BuildError} from '../generator/build.js';
+import {SITE_ROOT, loadFeed, BuildError} from '../generator/build.js';
+import {siteCopy, cleanCopies} from './helpers.js';
 
+after(cleanCopies);
 const {config} = await loadConfig(SITE_ROOT);
 const options = {feedUrl: config.feedUrl, downloadPage: config.downloadPage, versionDownload: config.versionDownload, files: config.fostermcp.arquivos};
 const valid = () => ({
@@ -22,9 +24,11 @@ const REAL = join(SITE_ROOT, 'public', config.fostermcp.feed);
 const appUpdates = join(SITE_ROOT, '..', 'src', 'updates.js');
 const parseUpdateFeed = existsSync(appUpdates) ? (await import(pathToFileURL(appUpdates).href)).parseUpdateFeed : null;
 
-test('o endereço do version.json fica no mesmo host da página de download, como o app exige', () => {
-  assert.equal(config.feedUrl, `${config.endereco}${config.fostermcp.feed}`);
-  assert.equal(new URL(config.feedUrl).host, new URL(config.downloadPage).host);
+test('o app lê o version.json pelo endereço raw do repositório e só aceita links ali ou em github.com', () => {
+  // Endereço que não depende do domínio do site: é o que vai no updateFeedUrl do app.
+  assert.equal(config.feedUrl, `https://raw.githubusercontent.com/${config.repositorio}/main/public/${config.fostermcp.feed}`);
+  assert.equal(new URL(config.downloadPage).host, 'github.com');
+  assert.equal(new URL(config.versionDownload('1.2.3', config.fostermcp.arquivos.windows)).host, 'github.com');
   assert.deepEqual(checkFeed(valid(), options), []);
 });
 
@@ -49,14 +53,13 @@ test('o contrato recusa campos fora do padrão, links de outros hosts e valores 
   }
 });
 
-test('o exemplo da prévia segue o contrato e a publicação exige o arquivo real', async () => {
-  const example = await loadFeed(SITE_ROOT, config, {publish: false}).catch(error => error);
-  if (!existsSync(REAL)) {
-    assert.equal(example.example, true);
-    await assert.rejects(loadFeed(SITE_ROOT, config, {publish: true}), error => error instanceof BuildError && /site-release/.test(error.problems[0]));
-  }
-  const raw = JSON.parse(readFileSync(join(SITE_ROOT, EXAMPLE_FEED), 'utf8'));
-  assert.equal(raw.windows.sha256, '0'.repeat(64), 'o exemplo não pode parecer um arquivo real');
+test('na prévia o version.json é opcional; fora dela o build exige o arquivo e confere o contrato', async () => {
+  const root = siteCopy();
+  assert.equal(await loadFeed(root, {...config, previa: true}), null);
+  await assert.rejects(loadFeed(root, {...config, previa: false}), error => error instanceof BuildError && /npm run release/.test(error.problems[0]));
+  mkdirSync(join(root, 'public/fostermcp'), {recursive: true});
+  writeFileSync(join(root, 'public', config.fostermcp.feed), JSON.stringify({...valid(), version: 'v1'}));
+  await assert.rejects(loadFeed(root, {...config, previa: true}), error => error instanceof BuildError && /version: versão no formato/.test(error.problems.join()), 'um arquivo presente sempre é conferido');
 });
 
 test('o version.json publicado (quando existe) segue o contrato do site e o do app', {skip: !existsSync(REAL) && 'ainda não há version.json real'}, () => {

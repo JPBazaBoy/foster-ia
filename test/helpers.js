@@ -5,12 +5,20 @@ import {inflateRawSync, crc32} from 'node:zlib';
 import {SITE_ROOT} from '../generator/build.js';
 
 const copies = [];
-// Cópia do conteúdo do site numa pasta temporária; files troca ou cria arquivos ({caminho: texto | null}).
-export function siteCopy(files = {}) {
+// Cópia do conteúdo do site numa pasta temporária, sem version.json. files troca ou cria arquivos
+// ({caminho: texto | null}); settings troca chaves true/false de config.js (padrão: prévia ligada).
+export function siteCopy(files = {}, settings = {}) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'central-ia-site-')));
   copies.push(root);
   for (const name of ['config.js', 'conteudo', 'catalog', 'public', 'assets'].filter(name => existsSync(join(SITE_ROOT, name))))
-    cpSync(join(SITE_ROOT, name), join(root, name), {recursive: true, filter: source => !source.endsWith('version.json') || source.includes('exemplo')});
+    cpSync(join(SITE_ROOT, name), join(root, name), {recursive: true, filter: source => !source.endsWith('version.json')});
+  let config = readFileSync(join(root, 'config.js'), 'utf8');
+  for (const [key, value] of Object.entries({previa: true, ...settings})) {
+    const pattern = new RegExp(`^(\\s*${key}:\\s*)(true|false)`, 'm');
+    if (!pattern.test(config)) throw new Error(`config.js sem a chave ${key}`);
+    config = config.replace(pattern, `$1${value}`);
+  }
+  writeFileSync(join(root, 'config.js'), config);
   for (const [path, content] of Object.entries(files)) {
     if (content === null) { rmSync(join(root, path), {recursive: true, force: true}); continue; }
     mkdirSync(dirname(join(root, path)), {recursive: true});

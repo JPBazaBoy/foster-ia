@@ -16,7 +16,13 @@ export function renderSite(site, {imageExists, assets}) {
   const appUrl = config.fostermcp.pagina;
   const newPage = () => { const nextId = createIdSet(); return {nextId, md: createRenderer({base, imageExists, pendingImages, nextId})}; };
   const contact = config.contato.link ? `<a href="${esc(config.contato.link)}">${esc(config.contato.nome)}</a>` : esc(config.contato.nome);
-  const itemsOf = area => site.items.filter(item => AREAS[area].types.includes(item.type));
+  // Arquivados saem das listas, da busca e da página inicial; a página deles continua no ar com o aviso.
+  const listed = site.items.filter(item => item.meta.situacao !== 'arquivado');
+  const itemsOf = area => listed.filter(item => AREAS[area].types.includes(item.type));
+  // Data de hoje em São Paulo (AAAA-MM-DD), para o selo "Pode estar desatualizado".
+  const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo'}).format(site.builtAt);
+  // Downloads do FosterMCP só fora da prévia, com o version.json em public/ (fora da prévia o build exige o arquivo).
+  const release = !config.previa && feed ? feed : null;
   const areaOf = item => TYPES[item.type].area;
   const nav = [['inicio', '', 'Início'], ...Object.entries(AREAS).map(([key, area]) => [key, `${key}/`, area.label]), ['ajuda', 'ajuda/', 'Ajuda']];
   const signature = extra => `<span class="assinatura${extra}"><span class="assinatura-nome">${esc(config.assinatura.nome)}</span>` +
@@ -35,7 +41,7 @@ export function renderSite(site, {imageExists, assets}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="no-referrer">
-${config.indexar ? '' : '<meta name="robots" content="noindex, nofollow">\n'}<meta name="color-scheme" content="light dark">
+${config.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="${config.cores.noite}">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(description || config.descricao)}">
@@ -63,7 +69,7 @@ ${site.dev ? `<script src="${href('assets/recarregar.js')}" defer></script>\n` :
     </details>
   </div>
 </header>
-<main id="conteudo" tabindex="-1">
+${config.previa ? '<p class="faixa-previa"><span class="container">Prévia em teste — conteúdo em construção</span></p>\n' : ''}<main id="conteudo" tabindex="-1">
 ${body}
 </main>
 <footer class="rodape">
@@ -79,17 +85,19 @@ ${body}
 
   // ---------- peças comuns ----------
   const badge = (kind, label) => `<span class="selo selo-${kind}">${label}</span>`;
-  const STATUS_KIND = {disponivel: 'ok', 'em-teste': 'teste', 'em-breve': 'breve'};
+  const STATUS_KIND = {disponivel: 'ok', 'em-teste': 'teste', 'em-breve': 'breve', defasado: 'defasado', arquivado: 'arquivado'};
+  // Depois de revisar_ate, o selo aparece sozinho: no build, se a data já passou, e no navegador (site.js) nos outros dias.
+  const reviewBadge = item => item.meta.revisar_ate ? `<span class="selo selo-revisar" data-revisar-ate="${item.meta.revisar_ate}"${item.meta.revisar_ate < today ? '' : ' hidden'}>Pode estar desatualizado</span>` : '';
   // Tutoriais e prompts disponíveis não precisam de selo: só software (app, skill, agente) mostra "Disponível".
   const badges = item => (['tutorial', 'prompt'].includes(item.type) && item.meta.situacao === 'disponivel' ? '' : badge(STATUS_KIND[item.meta.situacao], STATUS[item.meta.situacao].label)) +
-    (item.meta.avancado ? badge('avancado', 'Avançado') : '');
-  // Nas listas cabe um selo só: em breve vale mais que avançado, que vale mais que a situação.
-  const oneBadge = item => item.meta.situacao === 'em-breve' ? badge('breve', 'Em breve') : item.meta.avancado ? badge('avancado', 'Avançado') : badge(STATUS_KIND[item.meta.situacao], STATUS[item.meta.situacao].label);
+    (item.meta.avancado ? badge('avancado', 'Avançado') : '') + reviewBadge(item);
+  // Nos cartões cabe um selo de situação: defasado, arquivado e em breve valem mais que avançado, que vale mais que o resto.
+  const oneBadge = item => (['defasado', 'arquivado', 'em-breve'].includes(item.meta.situacao) || !item.meta.avancado ? badge(STATUS_KIND[item.meta.situacao], STATUS[item.meta.situacao].label) : badge('avancado', 'Avançado')) + reviewBadge(item);
   const platformNames = item => item.meta.plataformas.map(key => PLATFORMS[key].label);
   const families = item => [...new Set(item.meta.plataformas.map(key => PLATFORMS[key].label.replace(/ (Desktop|Code|\(.*\))$/, '')))];
   const firstSentence = text => text.match(/^.*?[.!?](?=\s|$)/)?.[0] || text;
   const chips = item => `<ul class="plataformas">${item.meta.plataformas.map(key => `<li${item.meta.situacao === 'em-breve' ? ' class="em-breve"' : ''}>${esc(PLATFORMS[key].label)}</li>`).join('')}` +
-    `${(item.meta.plataformasEmBreve || []).map(key => `<li class="em-breve">${esc(PLATFORMS[key].label)} · em breve</li>`).join('')}</ul>`;
+    `${(item.meta.plataformas_em_breve || []).map(key => `<li class="em-breve">${esc(PLATFORMS[key].label)} · em breve</li>`).join('')}</ul>`;
   const sourceNames = item => (item.meta.fontes || []).map(key => SOURCES[key].label).join(' + ');
   const filterData = item => {
     const terms = normalize([item.meta.titulo, item.meta.resumo, TYPES[item.type].label, ...platformNames(item), sourceNames(item), item.meta.assunto, item.prompt,
@@ -98,9 +106,10 @@ ${body}
       ` data-assunto="${esc(normalize(item.meta.assunto || ''))}" data-busca="${esc(terms)}"`;
   };
   const versionLine = item => {
-    if (item.type === 'app' && item.meta.download && feed) return `Versão ${esc(feed.data.version)} · ${formatDate(feed.data.publishedAt)}`;
+    if (item.type === 'app' && item.meta.download && release) return `Versão ${esc(release.version)} · ${formatDate(release.publishedAt)}`;
     return `${item.meta.versao ? `Versão ${esc(item.meta.versao)} · ` : ''}${formatDay(item.meta.atualizado)}`;
   };
+  const downloadOff = '<span class="botao botao-desativado" aria-disabled="true">Download liberado após a validação</span>';
   const copyButton = (target, label, kind = 'botao-linha botao-pequeno') => `<button type="button" class="botao ${kind}" data-copiar="${target}">${label}</button>`;
   const allLink = (area, count) => `<a class="ver-todos" href="${href(`${area}/`)}">${AREAS[area].all}${count ? ` (${count})` : ''} ${icon('arrow')}</a>`;
 
@@ -116,7 +125,7 @@ ${body}
   }
 
   function appCard(item, level) {
-    const download = item.type === 'app' && item.meta.download && feed;
+    const download = item.type === 'app' && item.meta.download;
     const installers = config.fostermcp.arquivos;
     return `<article class="app-cartao"${filterData(item)}>
   <div class="app-info">
@@ -124,7 +133,7 @@ ${body}
     <p class="app-lead">${esc(item.meta.resumo)}</p>
     ${item.meta.usos ? `<p class="rotulo">O que dá para fazer</p><ul class="usos">${item.meta.usos.map(use => `<li>${esc(use)}</li>`).join('')}</ul>` : ''}
     <p class="rotulo">Onde funciona</p>${chips(item)}
-    <div class="acoes"><a class="botao botao-escuro" href="${href(item.url)}">Ver passo a passo</a>${download ? `<a class="botao botao-ouro" href="${esc(config.latestDownload(installers.windows))}">Baixar para Windows</a><a class="botao botao-linha" href="${esc(config.latestDownload(installers.mac))}" aria-label="Baixar para Mac">Mac</a>` : ''}</div>
+    <div class="acoes"><a class="botao botao-escuro" href="${href(item.url)}">Ver passo a passo</a>${download && release ? `<a class="botao botao-ouro" href="${esc(config.latestDownload(installers.windows))}">Baixar para Windows</a><a class="botao botao-linha" href="${esc(config.latestDownload(installers.mac))}" aria-label="Baixar para Mac">Mac</a>` : download ? downloadOff : ''}</div>
   </div>
   ${conversation(item)}
 </article>`;
@@ -139,13 +148,14 @@ ${body}
   <div><h${level} class="linha-titulo"><a href="${href(item.url)}">${esc(item.meta.titulo)}</a></h${level}><p>${type ? `${TYPES[item.type].label} · ` : ''}${esc(joinNames(families(item), 'ou'))} · ${esc(firstSentence(item.meta.resumo))}</p></div>
   <span class="selos">${badges(item)}</span>
 </li>`;
+  // Prompts e tutoriais disponíveis não mostram selo; defasado, em teste e revisão vencida aparecem na linha.
   const promptRow = (item, id, {title = false} = {}) => `<li class="linha-prompt"${filterData(item)}>
-  <div class="linha-prompt-texto">${title ? `<a class="linha-prompt-titulo" href="${href(item.url)}">${esc(item.meta.titulo)}</a>` : ''}<q id="${id}">${esc(item.prompt)}</q></div>
+  <div class="linha-prompt-texto">${title || badges(item) ? `<div class="linha-topo">${title ? `<a class="linha-prompt-titulo" href="${href(item.url)}">${esc(item.meta.titulo)}</a>` : ''}${badges(item)}</div>` : ''}<q id="${id}">${esc(item.prompt)}</q></div>
   <span class="fonte-tag">${esc(sourceNames(item))}</span>
   ${copyButton(id, 'Copiar')}
 </li>`;
   const tutorialRow = (item, level) => `<li class="linha-tutorial"${filterData(item)}>
-  <h${level} class="linha-titulo"><a href="${href(item.url)}">${esc(item.meta.titulo)}</a></h${level}>
+  <div class="linha-topo"><h${level} class="linha-titulo"><a href="${href(item.url)}">${esc(item.meta.titulo)}</a></h${level}>${badges(item)}</div>
   <span class="assunto">${esc(item.meta.assunto)}</span><span class="tempo">${esc(item.meta.tempo)}</span>
 </li>`;
   const listFor = (area, items, level) => {
@@ -238,7 +248,7 @@ ${connectors.length ? `<h2 class="subtitulo-lista">Conectores</h2><ul class="lis
     <fieldset><legend>Onde procurar</legend><div class="filtro-grupo">${radios}</div></fieldset>
   </form>
   <p class="contagem" data-contagem aria-live="polite"></p>
-  <ul class="lista" data-lista>${site.items.map(item => row(item, 2, {type: true})).join('\n')}</ul>
+  <ul class="lista" data-lista>${listed.map(item => row(item, 2, {type: true})).join('\n')}</ul>
   ${emptyState}
 </div>`;
     files.set('catalogo/index.html', layout({title: 'Buscar', description: 'Busca em todos os itens da central.', current: null, body: html, path: 'catalogo/'}));
@@ -256,7 +266,7 @@ ${connectors.length ? `<h2 class="subtitulo-lista">Conectores</h2><ul class="lis
       } else if (section.tabs?.panels.length > 1) {
         const group = section.tabs.group, key = `${id}-aba`;
         const buttons = section.tabs.panels.map((panel, i) => `<button type="button" role="tab" id="${key}-${panel.tab.key}" aria-controls="${key}-${panel.tab.key}-painel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-aba="${panel.tab.key}">${esc(panel.tab.label)}</button>`).join('');
-        const soon = group === 'plataforma' && item ? (item.meta.plataformasEmBreve || []).map(platform => `<span class="aba-em-breve">${esc(PLATFORMS[platform].label)} · em breve</span>`).join('') : '';
+        const soon = group === 'plataforma' && item ? (item.meta.plataformas_em_breve || []).map(platform => `<span class="aba-em-breve">${esc(PLATFORMS[platform].label)} · em breve</span>`).join('') : '';
         const panels = section.tabs.panels.map(panel => `<section class="aba-painel" role="tabpanel" id="${key}-${panel.tab.key}-painel" aria-labelledby="${key}-${panel.tab.key}" data-aba="${panel.tab.key}" tabindex="0">
 <h3 class="aba-titulo">${esc(panel.tab.label)}</h3>
 ${md.tokens(panel.tokens)}</section>`).join('\n');
@@ -275,14 +285,16 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
   function itemActions(item) {
     const has = platform => item.meta.plataformas.includes(platform);
     if (item.meta.situacao === 'em-breve') return '<p class="acoes-nota">Ainda não disponível. Esta página mostra o que o item vai fazer.</p>';
-    if (item.type === 'app' && item.meta.download && feed) {
-      const {data, example} = feed, installers = config.fostermcp.arquivos;
+    if (item.type === 'app' && item.meta.download) {
       const update = item.sections.some(section => section.title === 'Atualizar');
+      const updateLink = update ? '<p class="acoes-nota">Já tem instalado? <a href="#atualizar">Veja como atualizar</a></p>' : '';
+      // Na prévia os instaladores não estão publicados: nenhum link que leve a 404.
+      if (!release) return `<div class="baixar" id="baixar">${downloadOff}<p class="acoes-nota">Na prévia, os instaladores ainda não estão disponíveis.</p>${updateLink}</div>`;
+      const data = release, installers = config.fostermcp.arquivos;
       return `<div class="baixar" id="baixar">
   <a class="botao botao-ouro" href="${esc(config.latestDownload(installers.windows))}">Baixar para Windows · ${formatSize(data.windows.sizeBytes)}</a>
   <a class="botao botao-linha" href="${esc(config.latestDownload(installers.mac))}">Baixar para Mac · ${formatSize(data.mac.sizeBytes)}</a>
-  ${update ? '<p class="acoes-nota">Já tem instalado? <a href="#atualizar">Veja como atualizar</a></p>' : ''}
-  ${example ? '<p class="acoes-nota previa">Prévia: versão, data e tamanhos de exemplo.</p>' : ''}
+  ${updateLink}
   ${data.notes.length ? `<details class="conferir"><summary>O que mudou na versão ${esc(data.version)}</summary><ul>${data.notes.map(note => `<li>${esc(note)}</li>`).join('')}</ul></details>` : ''}
   <details class="conferir"><summary>Conferir o arquivo (SHA-256)</summary>
     <p>Windows (PowerShell): <code>Get-FileHash .\\${esc(installers.windows)}</code></p><code class="hash">${esc(data.windows.sha256)}</code>
@@ -309,7 +321,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
     if (item.type === 'prompt') return `<div class="baixar">${copyButton('texto-prompt', 'Copiar o prompt', 'botao-escuro')}</div>`;
     if (item.type === 'conector' && item.meta.app) {
       const app = site.items.find(other => other.id === item.meta.app);
-      return `<div class="baixar"><a class="botao botao-ouro" href="${href(`${app.url}#baixar`)}">Baixar o ${esc(app.meta.titulo)}</a><p class="acoes-nota">O conector vem dentro do app.</p></div>`;
+      return `<div class="baixar"><a class="botao botao-linha" href="${href(`${app.url}#baixar`)}">Ver o ${esc(app.meta.titulo)}</a><p class="acoes-nota">O conector vem dentro do app.</p></div>`;
     }
     return '';
   }
@@ -317,13 +329,25 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
   const NOTICES = {
     'em-teste': 'Em teste: ainda está sendo validado no piloto. Confira os resultados antes de usar com clientes.',
     'em-breve': 'Em breve: ainda não está disponível. Esta página mostra o que ele vai fazer e o que será preciso.',
+    defasado: 'Defasado: este material pode não valer mais e não está sendo atualizado.',
+    arquivado: 'Arquivado: este material saiu das listas e não é mais mantido. A página continua aqui para consulta.',
   };
+  // Avisos do topo da página: situação, substituto, avançado e revisão vencida (este aparece sozinho na data).
+  function noticesFor(item) {
+    const {meta} = item;
+    const replacement = meta.substituido_por && site.items.find(other => other.id === meta.substituido_por);
+    const list = [];
+    if (NOTICES[meta.situacao]) list.push(`<p class="aviso aviso-${['defasado', 'arquivado'].includes(meta.situacao) ? meta.situacao : 'situacao'}">${esc(NOTICES[meta.situacao])}` +
+      `${replacement ? ` Use no lugar: <a href="${href(replacement.url)}">${esc(replacement.meta.titulo)}</a>.` : ''}</p>`);
+    if (meta.avancado) list.push('<p class="aviso aviso-avancado">Avançado: exige configuração técnica. Se não tiver experiência, peça ajuda antes.</p>');
+    if (meta.revisar_ate) list.push(`<p class="aviso aviso-revisar" data-revisar-ate="${meta.revisar_ate}"${meta.revisar_ate < today ? '' : ' hidden'}>Pode estar desatualizado: a revisão deste material estava marcada para ${formatDay(meta.revisar_ate)}.</p>`);
+    return list.join('\n  ');
+  }
 
   function renderItem(item) {
     const ctx = newPage(), {meta} = item, area = areaOf(item);
     const body = sections(item.sections, ctx, item);
     const metaLine = [versionLine(item), item.type === 'app' && meta.compatibilidade ? esc(meta.compatibilidade) : '', item.type === 'tutorial' ? `${esc(meta.assunto)} · ${esc(meta.tempo)}` : ''].filter(Boolean).join(' · ');
-    const notices = [NOTICES[meta.situacao] && ['situacao', NOTICES[meta.situacao]], meta.avancado && ['avancado', 'Avançado: exige configuração técnica. Se não tiver experiência, peça ajuda antes.']].filter(Boolean);
     let extra = '';
     if (item.type === 'prompt') extra = `<section class="secao" aria-labelledby="o-prompt"><h2 id="o-prompt">O prompt</h2><div class="caixa-prompt caixa-prompt-grande"><q id="texto-prompt">${esc(item.prompt)}</q>${copyButton('texto-prompt', 'Copiar')}</div><p class="nota">Troque o que está entre [colchetes] antes de enviar.</p></section>`;
     if (item.type === 'agente' && item.instructions) extra = `<details class="arquivo"><summary>Ver as instruções completas</summary><pre id="instrucoes-agente">${esc(item.instructions)}</pre></details>`;
@@ -340,7 +364,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
     </div>
     ${actions ? `<div class="item-acoes">${actions}</div>` : ''}
   </header>
-  ${notices.map(([kind, text]) => `<p class="aviso aviso-${kind}">${esc(text)}</p>`).join('')}
+  ${noticesFor(item)}
   <div class="item-corpo${body.toc ? ' com-sumario' : ''}">
     ${body.toc}
     <article class="texto">${ctx.md.tokens(item.intro)}${item.type === 'prompt' ? extra : ''}${body.html}${item.type === 'prompt' ? '' : extra}</article>

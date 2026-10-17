@@ -26,7 +26,11 @@ export default {
   repositorio: 'JPBazaBoy/foster-ia',
   endereco: 'https://jpbazaboy.github.io/foster-ia/',
 
-  // false pede aos buscadores (Google etc.) que não listem o site. Quem tem o link acessa normalmente.
+  // Modo prévia: faixa "Prévia em teste" em todas as páginas, pedido para os buscadores não listarem o site
+  // e downloads do FosterMCP desligados. Troque para false no lançamento, com a aprovação do responsável.
+  previa: true,
+
+  // Fora da prévia: false pede aos buscadores (Google etc.) que não listem o site. Quem tem o link acessa normalmente.
   indexar: false,
 
   // Para quem o assessor manda o diagnóstico. Aparece em frases como "envie para o responsável pela central".
@@ -36,8 +40,9 @@ export default {
   // Aviso curto do rodapé e da Ajuda (texto provisório, a confirmar).
   aviso: 'Iniciativa interna de assessores; não substitui os sistemas oficiais nem as orientações de compliance. A integração com o WhatsApp não é oficial.',
 
-  // FosterMCP: nomes fixos dos instaladores no GitHub Releases, caminho do version.json lido pelo app
-  // (nunca mude depois de publicado: as instalações consultam este endereço) e página de download.
+  // FosterMCP: nomes fixos dos instaladores no GitHub Releases, caminho do version.json dentro de public/
+  // (o app lê pelo endereço raw.githubusercontent.com, que não muda com domínio; nunca mude depois de publicado)
+  // e página do app no site.
   fostermcp: {
     arquivos: {windows: 'FosterMCP-Windows.exe', mac: 'FosterMCP-Mac.dmg'},
     feed: 'fostermcp/version.json',

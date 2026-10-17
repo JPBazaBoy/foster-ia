@@ -172,6 +172,12 @@ function initSummary() {
   }
 }
 
+// Selo e aviso "Pode estar desatualizado": aparecem sozinhos depois da data de revisar_ate.
+function initReview() {
+  const today = new Date().toLocaleDateString('en-CA');
+  for (const element of document.querySelectorAll('[data-revisar-ate][hidden]')) if (element.dataset.revisarAte < today) element.hidden = false;
+}
+
 function initMenu() {
   const menu = document.querySelector('.menu-celular');
   if (!menu) return;
@@ -186,4 +192,5 @@ initCopy();
 initFilters();
 initShortcut();
 initSummary();
+initReview();
 initMenu();

@@ -41,10 +41,13 @@ export const SOURCES = {
   whatsapp: {label: 'WhatsApp', aliases: []},
   email: {label: 'E-mail', aliases: ['e-mail e agenda', 'email e agenda', 'agenda']},
 };
+// Ciclo de vida: defasado continua nas listas com aviso; arquivado sai das listas e da busca, mas a página continua no ar.
 export const STATUS = {
   disponivel: {label: 'Disponível'},
   'em-teste': {label: 'Em teste'},
   'em-breve': {label: 'Em breve'},
+  defasado: {label: 'Defasado'},
+  arquivado: {label: 'Arquivado'},
 };
 
 export const normalizeKey = text => String(text).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '');

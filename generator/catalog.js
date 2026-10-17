@@ -15,14 +15,16 @@ const list = check => value => Array.isArray(value) && value.length > 0 && value
 const MINUTES = value => typeof value === 'string' && /^\d{1,3} min$/.test(value);
 
 // Campos do cabeçalho de cada item. A mensagem diz ao autor o que escrever.
-const FIELDS = {
+export const FIELDS = {
   titulo: {required: true, check: text(80), hint: 'texto de até 80 caracteres'},
   resumo: {required: true, check: text(220), hint: 'uma ou duas frases, até 220 caracteres; a primeira diz o que o item é'},
   situacao: {required: true, check: value => Object.hasOwn(STATUS, value), hint: `${Object.keys(STATUS).join(', ')}`},
   plataformas: {required: true, check: list(value => Object.hasOwn(PLATFORMS, value)), hint: `lista com ${Object.keys(PLATFORMS).join(', ')}`},
   atualizado: {required: true, check: realDay, hint: 'data no formato AAAA-MM-DD'},
   avancado: {check: value => typeof value === 'boolean', hint: 'true para itens que exigem configuração técnica'},
-  plataformasEmBreve: {check: list(value => Object.hasOwn(PLATFORMS, value)), hint: 'plataformas que ainda não funcionam e aparecem como "em breve"'},
+  plataformas_em_breve: {check: list(value => Object.hasOwn(PLATFORMS, value)), hint: 'plataformas que ainda não funcionam e aparecem como "em breve"'},
+  substituido_por: {check: value => REF.test(value), hint: 'item que substitui este, como skills/briefing-reuniao (só para defasado ou arquivado)'},
+  revisar_ate: {check: realDay, hint: 'data da próxima revisão, AAAA-MM-DD; depois dela o item mostra "Pode estar desatualizado"'},
   destaque: {check: value => typeof value === 'boolean', hint: 'true ou false'},
   versao: {check: text(20), hint: 'texto curto, entre aspas, como "1.0"'},
   ordem: {check: Number.isInteger, hint: 'número inteiro'},
@@ -141,7 +143,7 @@ export async function loadSite(root) {
   const read = path => readFile(join(root, path), 'utf8');
   const readYaml = async (path, check) => {
     if (!existsSync(join(root, path))) { problems.push({file: path, message: 'Arquivo obrigatório não encontrado.'}); return null; }
-    try { const data = parseYaml(await read(path)); return check(data) ? data : (problems.push({file: path, message: 'Formato inesperado; compare com o README.'}), null); }
+    try { const data = parseYaml(await read(path)); return check(data) ? data : (problems.push({file: path, message: 'Formato inesperado; compare com os comentários do arquivo e com o AGENTS.md.'}), null); }
     catch (error) { problems.push({file: path, message: `Erro de digitação: ${error.message.split('\n')[0]}`}); return null; }
   };
 
@@ -203,7 +205,8 @@ export async function loadSite(root) {
       }
       for (const [key, field] of Object.entries(FIELDS))
         if ((field.required || REQUIRED_BY_TYPE[type]?.includes(key)) && meta[key] === undefined) problems.push({file, message: `Falta o campo "${key}" (${field.hint}).`});
-      if ((meta.plataformasEmBreve || []).some(platform => meta.plataformas?.includes(platform))) problems.push({file, message: 'Uma plataforma não pode estar em plataformas e em plataformasEmBreve ao mesmo tempo.'});
+      if ((meta.plataformas_em_breve || []).some(platform => meta.plataformas?.includes(platform))) problems.push({file, message: 'Uma plataforma não pode estar em plataformas e em plataformas_em_breve ao mesmo tempo.'});
+      if (meta.substituido_por && !['defasado', 'arquivado'].includes(meta.situacao)) problems.push({file, message: 'substituido_por só vale para itens com situacao defasado ou arquivado.'});
       const soon = meta.situacao === 'em-breve';
       const item = {type, folder, slug, id: `${folder}/${slug}`, url: `${folder}/${slug}/`, file, meta, dir: isFolder ? join(dir, slug) : null};
       const itemVariables = {titulo: meta.titulo, slug, url: `/${item.url}`, pasta: slug, zip: `/${item.url}${slug}.zip`, zipNome: `${slug}.zip`};
@@ -236,6 +239,10 @@ export async function loadSite(root) {
   for (const item of items) {
     for (const ref of item.meta.requer || []) if (!byId.has(ref)) problems.push({file: item.file, message: `requer: "${ref}" não existe no catálogo.`});
     if (item.meta.app && byId.get(item.meta.app)?.type !== 'app') problems.push({file: item.file, message: `app: "${item.meta.app}" não é um app do catálogo.`});
+    const replacement = item.meta.substituido_por && byId.get(item.meta.substituido_por);
+    if (item.meta.substituido_por && !replacement) problems.push({file: item.file, message: `substituido_por: "${item.meta.substituido_por}" não existe no catálogo.`});
+    else if (replacement === item) problems.push({file: item.file, message: 'substituido_por não pode apontar para o próprio item.'});
+    else if (replacement?.meta.situacao === 'arquivado') problems.push({file: item.file, message: `substituido_por: "${item.meta.substituido_por}" está arquivado; aponte para um item em uso.`});
     if (item.type === 'app' && item.meta.download && item.meta.download !== config.fostermcp.feed.split('/')[0])
       problems.push({file: item.file, message: `download: só existe o version.json de ${config.fostermcp.feed}.`});
   }

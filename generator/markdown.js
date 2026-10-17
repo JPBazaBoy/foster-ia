@@ -158,7 +158,7 @@ export function createRenderer({base, imageExists, pendingImages, nextId}) {
       const alt = text || '';
       if (local(href) && !imageExists(href)) {
         pendingImages.push({path: href.slice(1), alt});
-        return `<figure class="tela"><div class="tela-vaga">Imagem: ${esc(alt)}</div><figcaption>Print a ser incluído · <code>site/public/${esc(href.slice(1))}</code></figcaption></figure>`;
+        return `<figure class="tela"><div class="tela-vaga">Imagem: ${esc(alt)}</div><figcaption>Print a ser incluído · <code>public/${esc(href.slice(1))}</code></figcaption></figure>`;
       }
       return `<figure class="tela"><img src="${esc(resolve(href))}" alt="${esc(alt)}" loading="lazy"><figcaption>${esc(title || alt)}</figcaption></figure>`;
     },

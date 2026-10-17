@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Site estático da Central de IA dos assessores: catálogo de apps, conectores, skills, agentes, prompts e tutoriais.",
+  "description": "Central de IA dos assessores: site estático com apps, conectores, skills, agentes, prompts e tutoriais.",
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
     "dev": "node generator/serve.js",
     "build": "node generator/build.js",
-    "test": "node --test --test-concurrency=1 test/*.test.js"
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "release": "node scripts/site-release.js"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "5.3.0",

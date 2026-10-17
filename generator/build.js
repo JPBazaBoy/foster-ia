@@ -11,28 +11,25 @@ import {createZip} from './zip.js';
 
 export const SITE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
-export const EXAMPLE_FEED = 'conteudo/exemplo-version.json';
 
 export class BuildError extends Error {
   constructor(problems) { super(`${problems.length} problema(s) no site`); this.problems = problems; }
 }
 
-// O version.json real fica em public/ e é gerado por scripts/site-release.js. Sem ele, a prévia usa o exemplo
-// (marcado na página); a publicação (--publicar) exige o arquivo real.
-export async function loadFeed(root, config, {publish = false} = {}) {
-  const real = join(root, 'public', config.fostermcp.feed);
-  const path = existsSync(real) ? real : publish ? null : join(root, EXAMPLE_FEED);
-  if (!path) throw new BuildError([`public/${config.fostermcp.feed}: falta o arquivo de versões. Gere com node scripts/site-release.js antes de publicar.`]);
-  let data;
-  try { data = JSON.parse(await readFile(path, 'utf8')); } catch (error) { throw new BuildError([`${basename(path)}: JSON inválido (${error.message}).`]); }
-  // O exemplo acompanha os endereços de config.js, para a prévia continuar valendo se eles mudarem.
-  if (path !== real && data && typeof data === 'object') {
-    data.downloadPage = config.downloadPage;
-    for (const system of ['windows', 'mac']) if (data[system]) data[system].url = config.versionDownload(data.version, config.fostermcp.arquivos[system]);
+// O version.json do FosterMCP fica em public/ e é gerado por npm run release. Na prévia ele é opcional (os
+// downloads ficam desligados); fora da prévia o build exige o arquivo. Devolve os dados ou null.
+export async function loadFeed(root, config) {
+  const name = `public/${config.fostermcp.feed}`;
+  const path = join(root, name);
+  if (!existsSync(path)) {
+    if (config.previa) return null;
+    throw new BuildError([`${name}: falta o arquivo de versões. Gere com npm run release antes de trocar previa para false.`]);
   }
+  let data;
+  try { data = JSON.parse(await readFile(path, 'utf8')); } catch (error) { throw new BuildError([`${name}: JSON inválido (${error.message}).`]); }
   const problems = checkFeed(data, {feedUrl: config.feedUrl, downloadPage: config.downloadPage, versionDownload: config.versionDownload, files: config.fostermcp.arquivos});
-  if (problems.length) throw new BuildError(problems.map(problem => `${path === real ? `public/${config.fostermcp.feed}` : EXAMPLE_FEED}: ${problem}`));
-  return {data, example: path !== real};
+  if (problems.length) throw new BuildError(problems.map(problem => `${name}: ${problem}`));
+  return data;
 }
 
 // Fontes servidas pelo próprio site (sem Google Fonts): Manrope em tudo, Cormorant Garamond só na assinatura.
@@ -61,10 +58,10 @@ async function buildAssets(root, config, dev) {
   return {files, version};
 }
 
-export async function build({root = SITE_ROOT, out = join(root, '_site'), publish = false, dev = false, now = new Date()} = {}) {
+export async function build({root = SITE_ROOT, out = join(root, '_site'), dev = false, now = new Date()} = {}) {
   const site = await loadSite(root);
   if (site.problems.length) throw new BuildError(site.problems.map(problem => `${problem.file}: ${problem.message}`));
-  site.feed = await loadFeed(root, site.config, {publish});
+  site.feed = await loadFeed(root, site.config);
   site.dev = dev;
   site.builtAt = now;
   const assets = await buildAssets(root, site.config, dev);
@@ -77,6 +74,9 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), publis
     if (item.instructions) files.set(`${item.url}AGENTS.md`, `${item.instructions}\n`);
   }
   files.set('.nojekyll', '');
+  // Na prévia (ou com indexar: false) os buscadores são avisados também pelo robots.txt. Num site de projeto
+  // (usuario.github.io/repositorio) ele só vale se houver domínio próprio; a meta noindex vale sempre.
+  files.set('robots.txt', site.config.noindex ? 'User-agent: *\nDisallow: /\n' : 'User-agent: *\nAllow: /\n');
   await rm(out, {recursive: true, force: true});
   await mkdir(out, {recursive: true});
   if (existsSync(join(root, 'public'))) await cp(join(root, 'public'), out, {recursive: true, filter: source => !basename(source).startsWith('.') || source === join(root, 'public')});
@@ -85,22 +85,23 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), publis
     await writeFile(join(out, path), content);
   }
   const unique = [...new Map(pendingImages.map(image => [image.path, image])).values()];
-  return {out, pages: [...files.keys()].filter(path => path.endsWith('.html')).length, pendingImages: unique, example: site.feed.example,
+  return {out, pages: [...files.keys()].filter(path => path.endsWith('.html')).length, pendingImages: unique, feed: site.feed,
     testing: site.items.filter(item => item.meta.situacao === 'em-teste').map(item => item.id),
     soon: site.items.filter(item => item.meta.situacao === 'em-breve').map(item => item.id), config: site.config};
 }
 
 export function report(result, log = console.log) {
   log(`Site gerado em ${result.out}: ${result.pages} páginas.`);
-  if (result.example) log('Aviso: sem public/fostermcp/version.json; a página de download usa dados de exemplo.');
+  if (result.config.previa) log(`Modo prévia: faixa de aviso, noindex e downloads do FosterMCP desligados${result.feed ? '' : ' (ainda sem public/fostermcp/version.json)'}. No lançamento, troque previa para false em config.js.`);
+  else log(`FosterMCP ${result.feed.version}: downloads ligados.`);
   if (result.testing.length) log(`Em teste: ${result.testing.join(', ')}.`);
   if (result.soon.length) log(`Em breve: ${result.soon.join(', ')}.`);
-  if (result.pendingImages.length) log(`Prints pendentes (${result.pendingImages.length}):\n${result.pendingImages.map(image => `  - site/public/${image.path}: ${image.alt}`).join('\n')}`);
+  if (result.pendingImages.length) log(`Prints pendentes (${result.pendingImages.length}):\n${result.pendingImages.map(image => `  - public/${image.path}: ${image.alt}`).join('\n')}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    report(await build({publish: process.argv.includes('--publicar')}));
+    report(await build());
   } catch (error) {
     if (!(error instanceof BuildError)) throw error;
     console.error(`O site não foi gerado. Corrija:\n${error.problems.map(problem => `  - ${problem}`).join('\n')}`);

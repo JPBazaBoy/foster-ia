@@ -3,7 +3,7 @@ titulo: FosterMCP
 resumo: Aplicativo que conecta o seu assistente de IA ao Atlas, ao WhatsApp e ao e-mail. Os dados ficam no seu computador.
 situacao: disponivel
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
-plataformasEmBreve: [gemini, grok]
+plataformas_em_breve: [gemini, grok]
 compatibilidade: Windows 10 e 11 · Mac com chip Apple (M1 ou mais novo) · gratuito
 usos:
   - Ver os vencimentos da semana de todos os clientes

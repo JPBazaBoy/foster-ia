@@ -21,6 +21,7 @@ export function checkConfig(config) {
   try { address = new URL(config.endereco); } catch { /* tratado abaixo */ }
   if (!address || address.protocol !== 'https:' || address.search || address.hash || address.username || address.password || !address.pathname.endsWith('/'))
     bad('endereco', 'endereço https terminado em /, sem ? nem #.');
+  if (typeof config.previa !== 'boolean') bad('previa', 'true durante a prévia, false no lançamento.');
   if (typeof config.indexar !== 'boolean') bad('indexar', 'true ou false.');
   if (!text(config.contato?.nome, 120)) bad('contato.nome', 'texto de até 120 caracteres, como "o responsável pela central".');
   if (config.contato?.link && !/^(https:\/\/|mailto:)/.test(config.contato.link)) bad('contato.link', 'vazio, https://… ou mailto:….');
@@ -35,8 +36,12 @@ export function checkConfig(config) {
     ...config,
     endereco: site,
     base: address.pathname,
-    feedUrl: new URL(app.feed, site).href,
-    downloadPage: new URL(app.pagina, site).href,
+    // O app lê o version.json no endereço raw do repositório, que não muda se o site ganhar domínio próprio
+    // (o app recusa redirecionamentos). Ele só aceita links no host do arquivo ou em github.com: por isso a
+    // página de download do version.json é a da última release, e não a página do site.
+    feedUrl: `https://raw.githubusercontent.com/${config.repositorio}/main/public/${app.feed}`,
+    downloadPage: `https://github.com/${config.repositorio}/releases/latest`,
+    noindex: config.previa || !config.indexar,
     // Os botões do site sempre levam ao instalador mais recente; o version.json aponta o arquivo exato da versão.
     latestDownload: name => `https://github.com/${config.repositorio}/releases/latest/download/${name}`,
     versionDownload: (version, name) => `https://github.com/${config.repositorio}/releases/download/v${version}/${name}`,

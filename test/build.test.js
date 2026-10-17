@@ -1,7 +1,7 @@
 import test, {after} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync, writeFileSync, mkdirSync} from 'node:fs';
-import {join} from 'node:path';
+import {join, dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 import {build, BuildError} from '../generator/build.js';
 import {loadConfig} from '../generator/site-config.js';
@@ -16,16 +16,89 @@ const pages = htmlFiles(out);
 const html = Object.fromEntries(pages.map(page => [page, read(join(out, page))]));
 const ids = Object.fromEntries(Object.entries(html).map(([page, text]) => [page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]))]));
 
-test('gera início, busca, categorias, itens, ajuda e 404, e o version.json de exemplo só na prévia', () => {
+const prompt = (titulo, situacao, extra = '') => `---
+titulo: ${titulo}
+resumo: Prompt sintético para testar o ciclo de vida.
+situacao: ${situacao}
+plataformas: [claude-desktop]
+fontes: [atlas]
+atualizado: 2026-10-01
+${extra}
+---
+
+## Prompt
+
+Usando o FosterMCP, faça um teste.
+
+## Quando usar
+
+Em testes.
+`;
+const feedFor = config => ({
+  version: '9.8.7', publishedAt: '2026-11-02T13:00:00.000Z', downloadPage: config.downloadPage,
+  windows: {url: config.versionDownload('9.8.7', config.fostermcp.arquivos.windows), sha256: createHash('sha256').update('w').digest('hex'), sizeBytes: 52428800},
+  mac: {url: config.versionDownload('9.8.7', config.fostermcp.arquivos.mac), sha256: createHash('sha256').update('m').digest('hex'), sizeBytes: 73400320},
+  notes: ['Novidade sintética.'],
+});
+const writeFeed = async root => {
+  const {config} = await loadConfig(root);
+  mkdirSync(dirname(join(root, 'public', config.fostermcp.feed)), {recursive: true});
+  writeFileSync(join(root, 'public', config.fostermcp.feed), `${JSON.stringify(feedFor(config), null, 2)}\n`);
+  return config;
+};
+
+test('gera início, busca, categorias, itens, ajuda e 404, com endereços curtos para o app e os conectores', () => {
   for (const page of ['index.html', '404.html', 'catalogo/index.html', 'ajuda/index.html', 'apps/index.html', 'skills/index.html', 'agentes/index.html', 'prompts/index.html',
     'tutoriais/index.html', 'apps/fostermcp/index.html', 'skills/apresentacao-cliente/index.html', 'skills/resumo-vencimentos/index.html',
     'agentes/fostermcp-grokbot/index.html', 'agentes/fostermcp-hermes/index.html', 'prompts/preparar-reuniao/index.html', 'tutoriais/primeiros-passos/index.html'])
     assert.ok(pages.includes(page), page);
-  assert.equal(result.example, true);
-  assert.equal(existsSync(join(out, 'fostermcp/version.json')), false, 'o exemplo nunca é publicado como version.json');
-  assert.match(html['apps/fostermcp/index.html'], /Prévia: versão, data e tamanhos de exemplo/);
   assert.ok(existsSync(join(out, '.nojekyll')));
+  assert.match(html['fostermcp/index.html'], new RegExp(`url=${base}apps/fostermcp/`), 'endereço curto leva à página do app');
+  assert.match(html['conectores/index.html'], new RegExp(`url=${base}apps/`), '/conectores/ leva a Apps e conectores');
   assert.deepEqual(result.soon.sort(), ['agentes/fostermcp-grokbot', 'agentes/fostermcp-hermes', 'skills/resumo-vencimentos']);
+});
+
+test('modo prévia: faixa em todas as páginas, noindex, robots.txt fechado e nenhum link de instalador', () => {
+  for (const [page, text] of Object.entries(html)) {
+    if (!text.includes('<main')) continue;
+    assert.match(text, /<p class="faixa-previa"><span class="container">Prévia em teste — conteúdo em construção<\/span><\/p>/, page);
+    assert.match(text, /<meta name="robots" content="noindex, nofollow">/, page);
+    assert.doesNotMatch(text, /\/releases\//, `${page}: link para instalador que ainda não existe`);
+  }
+  assert.equal(read(join(out, 'robots.txt')), 'User-agent: *\nDisallow: /\n');
+  for (const page of ['index.html', 'apps/index.html', 'apps/fostermcp/index.html'])
+    assert.match(html[page], /<span class="botao botao-desativado" aria-disabled="true">Download liberado após a validação<\/span>/, page);
+  assert.match(html['apps/fostermcp/index.html'], /Na prévia, os instaladores ainda não estão disponíveis\./);
+  assert.doesNotMatch(html['apps/fostermcp/index.html'], /Versão \d/, 'sem versão inventada na prévia');
+  assert.equal(existsSync(join(out, 'fostermcp/version.json')), false);
+});
+
+test('ciclo de vida: defasado com substituto, arquivado fora das listas e da busca, revisão vencida', async () => {
+  const copy = siteCopy({
+    'catalog/prompts/teste-defasado.md': prompt('Prompt defasado', 'defasado', 'substituido_por: prompts/preparar-reuniao'),
+    'catalog/prompts/teste-arquivado.md': prompt('Prompt arquivado', 'arquivado'),
+    'catalog/prompts/teste-vencido.md': prompt('Prompt vencido', 'disponivel', 'revisar_ate: 2026-10-01'),
+    'catalog/prompts/teste-em-dia.md': prompt('Prompt em dia', 'disponivel', 'revisar_ate: 2027-01-01'),
+  });
+  const target = join(copy, '_site');
+  await build({root: copy, out: target, now: new Date('2026-10-16T15:00:00Z')});
+  const page = path => read(join(target, path));
+  const lists = ['index.html', 'prompts/index.html', 'catalogo/index.html'].map(page).join('\n');
+  // Defasado continua nas listas, com selo, aviso e link para o substituto.
+  assert.match(page('prompts/index.html'), /Prompt defasado/);
+  assert.match(page('prompts/teste-defasado/index.html'), /<span class="selo selo-defasado">Defasado<\/span>/);
+  assert.match(page('prompts/teste-defasado/index.html'), new RegExp(`<p class="aviso aviso-defasado">Defasado: [^<]+ Use no lugar: <a href="${base}prompts/preparar-reuniao/">[^<]+</a>\\.</p>`));
+  // Arquivado sai das listas e da busca, mas a página continua no ar com o aviso.
+  assert.doesNotMatch(lists, /Prompt arquivado|teste-arquivado/);
+  assert.match(page('prompts/teste-arquivado/index.html'), /<span class="selo selo-arquivado">Arquivado<\/span>/);
+  assert.match(page('prompts/teste-arquivado/index.html'), /<p class="aviso aviso-arquivado">Arquivado: /);
+  // Revisão vencida: selo e aviso já visíveis no build. No prazo: escondidos, e o navegador revela na data.
+  assert.match(page('prompts/teste-vencido/index.html'), /<span class="selo selo-revisar" data-revisar-ate="2026-10-01">Pode estar desatualizado<\/span>/);
+  assert.match(page('prompts/teste-vencido/index.html'), /<p class="aviso aviso-revisar" data-revisar-ate="2026-10-01">Pode estar desatualizado: a revisão deste material estava marcada para 01\/10\/2026\.<\/p>/);
+  assert.match(page('prompts/index.html'), /<span class="selo selo-revisar" data-revisar-ate="2026-10-01">Pode estar desatualizado/);
+  assert.match(page('prompts/teste-em-dia/index.html'), /<span class="selo selo-revisar" data-revisar-ate="2027-01-01" hidden>/);
+  assert.match(page('prompts/teste-em-dia/index.html'), /<p class="aviso aviso-revisar" data-revisar-ate="2027-01-01" hidden>/);
+  assert.match(read(join(target, 'assets/site.js')), /data-revisar-ate/, 'o navegador revela o selo quando a data passa');
 });
 
 test('segue o formato do portal: cabeçalho com assinatura e navegação, selos, abas com "em breve" e passo a passo', () => {
@@ -73,8 +146,7 @@ test('sem rastreadores nem recursos de fora: scripts, estilos, fontes e imagens 
     assert.doesNotMatch(text, /<link(?![^>]*rel="canonical")[^>]*href="https?:/, `${page}: folha de estilo, fonte ou ícone externo`);
     if (!text.includes('<main')) continue;
     assert.match(text, /<meta http-equiv="Content-Security-Policy" content="default-src 'self';/, page);
-    assert.match(text, /<meta name="robots" content="noindex, nofollow">/, `${page}: indexar: false em config.js`);
-  }
+      }
   const css = read(join(out, 'assets/site.css'));
   assert.doesNotMatch(css, /url\(\s*['"]?(https?:)?\/\//, 'o CSS não busca nada fora do site');
   assert.match(css, /^:root\{--noite:#171E2D;--marinho:#182949;/, 'as cores oficiais vêm de config.js');
@@ -112,33 +184,25 @@ test('cada skill com SKILL.md vira um .zip com a pasta na raiz; os agentes viram
   for (const slug of ['fostermcp-grokbot', 'fostermcp-hermes']) assert.equal(existsSync(join(out, `agentes/${slug}/AGENTS.md`)), false, slug);
 });
 
-test('os botões de download usam o instalador mais recente do repositório público', async () => {
-  const {config} = await loadConfig(root);
-  const page = html['apps/fostermcp/index.html'];
-  for (const name of Object.values(config.fostermcp.arquivos)) assert.ok(page.includes(`href="https://github.com/${config.repositorio}/releases/latest/download/${name}"`), name);
-  assert.match(html['fostermcp/index.html'], new RegExp(`url=${base}apps/fostermcp/`), 'endereço curto leva à página do app');
-  assert.match(html['conectores/index.html'], new RegExp(`url=${base}apps/`), '/conectores/ leva a Apps e conectores');
-});
-
-test('com o version.json real, a página mostra versão, data, tamanhos e novidades dele, e a publicação aceita', async () => {
-  const copy = siteCopy();
-  const {config} = await loadConfig(copy);
-  await assert.rejects(build({root: copy, out: join(copy, '_publicar'), publish: true}), error => error instanceof BuildError && /site-release/.test(error.problems.join()));
-  const feed = {
-    version: '9.8.7', publishedAt: '2026-11-02T13:00:00.000Z', downloadPage: config.downloadPage,
-    windows: {url: config.versionDownload('9.8.7', config.fostermcp.arquivos.windows), sha256: createHash('sha256').update('w').digest('hex'), sizeBytes: 52428800},
-    mac: {url: config.versionDownload('9.8.7', config.fostermcp.arquivos.mac), sha256: createHash('sha256').update('m').digest('hex'), sizeBytes: 73400320},
-    notes: ['Novidade sintética.'],
-  };
-  mkdirSync(join(copy, 'public/fostermcp'), {recursive: true});
-  writeFileSync(join(copy, 'public', config.fostermcp.feed), `${JSON.stringify(feed, null, 2)}\n`);
-  const published = await build({root: copy, out: join(copy, '_publicar'), publish: true});
-  assert.equal(published.example, false);
-  const page = read(join(copy, '_publicar/apps/fostermcp/index.html'));
+test('no lançamento (previa: false) o build exige o version.json e liga os downloads com versão, data e tamanhos', async () => {
+  const copy = siteCopy({}, {previa: false});
+  await assert.rejects(build({root: copy, out: join(copy, '_lancamento')}), error => error instanceof BuildError && /npm run release/.test(error.problems.join()));
+  const config = await writeFeed(copy);
+  const launched = await build({root: copy, out: join(copy, '_lancamento')});
+  assert.equal(launched.feed.version, '9.8.7');
+  const page = read(join(copy, '_lancamento/apps/fostermcp/index.html'));
+  for (const name of Object.values(config.fostermcp.arquivos)) assert.ok(page.includes(`href="${config.latestDownload(name)}"`), `${name}: botão leva ao instalador mais recente`);
   assert.match(page, /Baixar para Windows · 50 MB/);
   assert.match(page, /Baixar para Mac · 70 MB/);
   assert.match(page, /Versão 9\.8\.7 · 02\/11\/2026/);
   assert.match(page, /Novidade sintética\./);
-  assert.doesNotMatch(page, /de exemplo/);
-  assert.equal(read(join(copy, '_publicar', config.fostermcp.feed)), read(join(copy, 'public', config.fostermcp.feed)));
+  assert.doesNotMatch(page, /faixa-previa|Download liberado após a validação/);
+  assert.match(page, /<meta name="robots" content="noindex, nofollow">/, 'com indexar: false os buscadores continuam avisados');
+  assert.equal(read(join(copy, '_lancamento', config.fostermcp.feed)), read(join(copy, 'public', config.fostermcp.feed)));
+  // indexar: true (fora da prévia) libera os buscadores.
+  const open = siteCopy({}, {previa: false, indexar: true});
+  await writeFeed(open);
+  await build({root: open, out: join(open, '_site')});
+  assert.doesNotMatch(read(join(open, '_site/index.html')), /name="robots"/);
+  assert.equal(read(join(open, '_site/robots.txt')), 'User-agent: *\nAllow: /\n');
 });

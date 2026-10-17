@@ -2,9 +2,9 @@ import test, {after} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync, readdirSync, cpSync} from 'node:fs';
 import {join} from 'node:path';
-import {loadSite} from '../generator/catalog.js';
+import {loadSite, FIELDS} from '../generator/catalog.js';
 import {SITE_ROOT} from '../generator/build.js';
-import {TYPES, PLATFORMS} from '../generator/taxonomy.js';
+import {TYPES, PLATFORMS, STATUS} from '../generator/taxonomy.js';
 import {siteCopy, cleanCopies} from './helpers.js';
 
 after(cleanCopies);
@@ -39,7 +39,7 @@ test('o catálogo real está válido: cabeçalhos, seções, abas, blocos, skill
 test('honestidade de plataforma: Gemini e Grok só aparecem como "em breve"', () => {
   const app = byId('apps/fostermcp');
   assert.deepEqual(app.meta.plataformas, ['claude-desktop', 'chatgpt-codex', 'cursor', 'claude-code']);
-  assert.deepEqual(app.meta.plataformasEmBreve, ['gemini', 'grok']);
+  assert.deepEqual(app.meta.plataformas_em_breve, ['gemini', 'grok']);
   for (const item of site.items) assert.ok(!item.meta.plataformas.some(platform => ['gemini', 'grok'].includes(platform)), item.id);
   // Itens que dependem do FosterMCP não oferecem Projetos e GPTs do ChatGPT como lugar para consultar dados.
   for (const item of site.items.filter(candidate => candidate.type === 'prompt')) assert.ok(!item.meta.plataformas.includes('chatgpt'), item.id);
@@ -124,7 +124,12 @@ test('erros comuns de quem escreve viram mensagens claras, com o arquivo', async
     [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nrequer: [apps/nao-existe]')}, /requer: "apps\/nao-existe" não existe/],
     [{'catalog/prompts/teste.md': PROMPT.replace('Em testes.', '### Claude Desktop\n\nCole.\n\n### Outro jeito\n\nCole.')}, /"### Outro jeito" não é nome de aba/],
     [{'catalog/prompts/teste.md': PROMPT.replace('[claude-desktop]', '[claude-desktop, cursor]').replace('Em testes.', '### Claude Desktop\n\nCole.')}, /A plataforma Cursor está em plataformas, mas não tem aba/],
-    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nplataformasEmBreve: [claude-desktop]')}, /não pode estar em plataformas e em plataformasEmBreve/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nplataformas_em_breve: [claude-desktop]')}, /não pode estar em plataformas e em plataformas_em_breve/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nsubstituido_por: prompts/preparar-reuniao')}, /substituido_por só vale para itens com situacao defasado ou arquivado/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: defasado\nsubstituido_por: prompts/nao-existe')}, /substituido_por: "prompts\/nao-existe" não existe no catálogo/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: defasado\nsubstituido_por: prompts/teste')}, /substituido_por não pode apontar para o próprio item/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: defasado\nsubstituido_por: prompts/velho'), 'catalog/prompts/velho.md': PROMPT.replace('em-teste', 'arquivado')}, /"prompts\/velho" está arquivado/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nrevisar_ate: 2027-02-30')}, /revisar_ate: data da próxima revisão/],
     [{'catalog/prompts/teste.md': PROMPT.replace('Em testes.', '```exemplos\n- fonte: Atlas\n  pergunta: Sem resposta?\n```')}, /bloco exemplos: lista de 1 a 6 exemplos/],
     [{'catalog/prompts/teste.md': PROMPT.replace('Em testes.', '```resultado\ntipo: memo\ntitulo: X\nlinhas:\n  - [Total, R$ 1,23 mi]\n```')}, /bloco resultado: tipo \(memo ou slide\)/],
     [{'catalog/apps/fostermcp.md': app.replace('### Mac\n', '### Linux\n')}, /"### Linux" não é nome de aba/],
@@ -139,4 +144,13 @@ test('erros comuns de quem escreve viram mensagens claras, com o arquivo', async
     const problems = await problemsIn(files);
     assert.ok(problems.some(problem => expected.test(problem)), `${expected}\n${problems.join('\n')}`);
   }
+});
+
+test('os guias acompanham o código: o AGENTS.md documenta todos os campos, situações e plataformas', () => {
+  const agents = readFileSync(join(SITE_ROOT, 'AGENTS.md'), 'utf8');
+  for (const name of [...Object.keys(FIELDS), ...Object.keys(STATUS), ...Object.keys(PLATFORMS)]) assert.ok(agents.includes(`\`${name}\``), `AGENTS.md não cita \`${name}\``);
+  for (const {folder} of Object.values(TYPES)) assert.ok(agents.includes(`catalog/${folder}/_modelo`), `AGENTS.md não aponta o modelo de ${folder}`);
+  assert.match(readFileSync(join(SITE_ROOT, 'CLAUDE.md'), 'utf8'), /^@AGENTS\.md$/m, 'CLAUDE.md importa o AGENTS.md');
+  const guide = readFileSync(join(SITE_ROOT, 'COMO-EDITAR.md'), 'utf8');
+  for (const name of Object.keys(STATUS)) assert.ok(guide.includes(`\`${name}\``), `COMO-EDITAR.md não explica \`${name}\``);
 });
