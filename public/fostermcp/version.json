@@ -1,0 +1,19 @@
+{
+  "version": "0.4.0",
+  "publishedAt": "2026-10-17T02:38:24.660Z",
+  "downloadPage": "https://github.com/JPBazaBoy/foster-ia/releases/latest",
+  "windows": {
+    "url": "https://github.com/JPBazaBoy/foster-ia/releases/download/v0.4.0/FosterMCP-Windows.exe",
+    "sha256": "651c9f8413720834f1201664ba5b6bd2beb984a72c3c955fecb4b79f7875aa2c",
+    "sizeBytes": 369136942
+  },
+  "mac": {
+    "url": "https://github.com/JPBazaBoy/foster-ia/releases/download/v0.4.0/FosterMCP-Mac.dmg",
+    "sha256": "c41a1b3598f1940c6876d1492e7cb9872e86716721b40345458b292d5320012d",
+    "sizeBytes": 443551968
+  },
+  "notes": [
+    "O Atlas mostra na tela o que faltou na última atualização.",
+    "WhatsApp: um contato por linha (com e sem o 9º dígito), apelidos, pareamento por código e saúde em linguagem simples."
+  ]
+}

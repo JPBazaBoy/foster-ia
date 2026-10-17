@@ -33,7 +33,7 @@ export default {
   // Downloads do FosterMCP, independentes da prévia. true liga os botões "Baixar para Windows" e "Mac", que levam
   // ao instalador da última release do GitHub; exige public/fostermcp/version.json (gerado por npm run release).
   // false mostra "Download liberado após a validação", sem link para instalador.
-  downloads: false,
+  downloads: true,
 
   // Fora da prévia: false pede aos buscadores (Google etc.) que não listem o site. Quem tem o link acessa normalmente.
   indexar: false,

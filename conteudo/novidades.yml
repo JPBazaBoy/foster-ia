@@ -1,5 +1,8 @@
 # Novidades da página inicial. A mais nova aparece primeiro (a ordem é pela data; no mesmo dia, a ordem do arquivo).
 # link é opcional e começa com / (por exemplo, /apps/fostermcp/).
+- data: 2026-10-17
+  texto: "FosterMCP 0.4.0 disponível para download: o Atlas mostra o que faltou na atualização e o WhatsApp ganhou apelidos, pareamento por código e saúde em linguagem simples."
+  link: /apps/fostermcp/
 - data: 2026-10-16
   texto: "Central em prévia. Por enquanto, traz o FosterMCP e os tutoriais; skills, modelos de agentes e prompts estão sendo preparados."
 - data: 2026-10-16
