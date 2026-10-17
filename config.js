@@ -1,13 +1,24 @@
-// Configuração única da central. Nome, marca, endereços e contato ficam só aqui.
-// PROVISÓRIO: nome, marca, contato, aviso institucional e endereços aguardam a decisão do responsável.
+// Configuração única da central: nome, assinatura, cores, endereços, contato e avisos ficam só aqui.
+// PROVISÓRIO: assinatura, contato, aviso institucional e endereços aguardam a decisão do responsável.
 export default {
-  // Nome e marca. A sigla aparece no quadradinho do logo; nada de logotipo de terceiros.
+  // Nome do produto, em dourado no cabeçalho e no título das páginas.
   nome: 'Central de IA',
-  descricao: 'Apps, conectores, skills, agentes, prompts e tutoriais de IA para o dia a dia do assessor de investimentos.',
-  marca: {
-    sigla: 'IA',
-    cor: '#4f46e5', // cor principal no tema claro
-    corTemaEscuro: '#8b93ff', // a mesma cor, mais clara, para o tema escuro
+  descricao: 'Aplicativos, skills, modelos de agentes, prompts e tutoriais de IA para o dia a dia do assessor.',
+
+  // Assinatura do cabeçalho e do rodapé, em texto (sem logotipo oficial).
+  assinatura: {nome: 'FOSTER', complemento: 'PARTNERS'},
+
+  // Cores da Foster (CSS do fosterinvestimentos.com.br).
+  cores: {
+    noite: '#171E2D', // cabeçalho
+    marinho: '#182949', // texto e botões escuros
+    azul: '#3B4E73',
+    creme: '#FEFBF4',
+    dourado: '#FCBB5B', // botão de download
+    douradoDetalhe: '#D59A3B', // linhas, marcadores e aba ativa
+    douradoTexto: '#8A6526', // texto pequeno em dourado
+    fundo: '#F5F6F8', // área de leitura
+    borda: '#E3E7ED',
   },
 
   // Repositório público (dono/nome) com o site e os instaladores, e o endereço do GitHub Pages.
@@ -15,17 +26,15 @@ export default {
   repositorio: 'JPBazaBoy/foster-ia',
   endereco: 'https://jpbazaboy.github.io/foster-ia/',
 
-  // false pede aos buscadores (Google etc.) que não listem o site. O site continua aberto a quem tiver o link.
+  // false pede aos buscadores (Google etc.) que não listem o site. Quem tem o link acessa normalmente.
   indexar: false,
 
-  // Para onde o assessor manda dúvidas e o diagnóstico. link pode ser https://… ou mailto:…, ou ficar vazio.
-  contato: {
-    texto: 'Fale com o responsável pela Central de IA (contato a definir).',
-    link: '',
-  },
+  // Para quem o assessor manda o diagnóstico. Aparece em frases como "envie para o responsável pela central".
+  // link pode ser https://…, mailto:… ou ficar vazio.
+  contato: {nome: 'o responsável pela central', link: ''},
 
-  // Texto institucional do rodapé e da Ajuda (texto provisório, a confirmar).
-  aviso: 'A Central de IA é uma iniciativa interna, feita por assessores para assessores, para facilitar o uso de IA no dia a dia. As ferramentas daqui não substituem os sistemas, as políticas e as orientações de compliance da empresa. (Texto provisório, a confirmar.)',
+  // Aviso curto do rodapé e da Ajuda (texto provisório, a confirmar).
+  aviso: 'Iniciativa interna de assessores; não substitui os sistemas oficiais nem as orientações de compliance. A integração com o WhatsApp não é oficial.',
 
   // FosterMCP: nomes fixos dos instaladores no GitHub Releases, caminho do version.json lido pelo app
   // (nunca mude depois de publicado: as instalações consultam este endereço) e página de download.

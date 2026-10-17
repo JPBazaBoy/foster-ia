@@ -1,34 +1,24 @@
 ---
-# Página do agente. As instruções ficam em instrucoes.md (até 8000 caracteres) e viram o AGENTS.md para download.
+# Página do modelo de agente. As instruções ficam em instrucoes.md (até 8000 caracteres) e viram o AGENTS.md.
 titulo: Nome do agente
-resumo: Uma frase dizendo o que o agente faz.
-plataformas: [claude-desktop, chatgpt-codex, chatgpt, claude-code]
+resumo: Modelo de agente que [faz o quê]. A primeira frase diz o que ele é.
+situacao: em-teste
+plataformas: [claude-desktop, chatgpt, chatgpt-codex, claude-code]
 atualizado: 2026-10-16
-status: rascunho
 versao: "0.1"
 palavras: [palavras, para, a busca]
 ---
 
-## O que faz
+## Para que serve
 
-O que o agente entrega.
+O que o agente entrega e em que situação.
 
-## Para quem
+## O que precisa
 
-Quem vai usar.
+```requisitos
+- texto: O que precisa estar instalado
+```
 
-## Exemplos de uso
-
-- Pedidos de exemplo.
-
-## Requisitos
-
-- O que precisa estar instalado.
-
-## Como instalar
+## Passo a passo
 
 <!-- incluir: usar-agente -->
-
-## Privacidade
-
-O que o agente consulta e para onde vão os dados.

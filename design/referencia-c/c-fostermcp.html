@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FosterMCP — Central de IA (versão C)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="c-portal.css">
+<style>
+  .crumbs { padding-top: 24px; font-size: 13.5px; color: var(--muted); }
+  .crumbs b { color: var(--navy); font-weight: 600; }
+  .head { display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: end; padding: 18px 0 28px; border-bottom: 1px solid var(--line); }
+  .head .title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .head h1 { font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+  .head p { margin-top: 8px; color: var(--blue); max-width: 680px; font-size: 16.5px; }
+  .head .meta { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .dl { display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 230px; }
+  .dl small { font-size: 12px; color: var(--muted); text-align: center; }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; padding-top: 32px; }
+  .toc { position: sticky; top: 24px; align-self: start; font-size: 14px; }
+  .toc h4 { font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .toc a { display: block; padding: 6px 0 6px 12px; border-left: 2px solid var(--line); color: var(--blue-2); }
+  .toc a.on { border-left-color: var(--gold-deep); color: var(--navy); font-weight: 600; }
+
+  article section { padding-bottom: 44px; margin-bottom: 44px; border-bottom: 1px solid var(--line); }
+  article section:last-child { border-bottom: 0; }
+  article h2 { font-size: 23px; font-weight: 700; letter-spacing: -.01em; }
+  article h2 + p { color: var(--blue-2); margin-top: 6px; max-width: 720px; }
+  article p { color: var(--blue); }
+
+  /* Como funciona, em uma linha */
+  .flow { display: grid; grid-template-columns: 1fr 34px 1.1fr 34px 1fr; align-items: center; margin-top: 20px; }
+  .node { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; font-size: 14px; }
+  .node h5 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .node div { font-weight: 600; margin-top: 4px; }
+  .node.core { background: var(--navy); color: var(--cream); border-color: var(--navy); }
+  .node.core h5 { color: #B8C0CF; }
+  .node.core small { display: block; color: var(--gold); font-weight: 600; font-size: 12px; margin-top: 4px; }
+  .arr { height: 1px; background: var(--gold-deep); position: relative; margin: 0 4px; }
+  .arr::after { content: ""; position: absolute; right: -1px; top: -4px; border-left: 7px solid var(--gold-deep); border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+
+  /* Exemplos */
+  .examples { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+  .ex { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 16px; font-size: 13.5px; display: flex; flex-direction: column; gap: 10px; }
+  .ex .src { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-ink); }
+  .ex .q { background: var(--navy); color: var(--cream); border-radius: 10px 10px 3px 10px; padding: 9px 12px; }
+  .ex .a { color: var(--navy); line-height: 1.55; }
+  .ex .a b { font-weight: 700; }
+  .ex .cite { font-size: 11.5px; color: var(--muted); margin-top: auto; }
+
+  /* Requisitos */
+  .req { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; list-style: none; }
+  .req li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 15px; color: var(--navy); }
+  .req li::before { content: "✓"; color: var(--teal); font-weight: 700; }
+  .req li.opt::before { content: "○"; color: var(--muted); }
+  .req li span { color: var(--muted); font-size: 13.5px; display: block; }
+
+  /* Abas */
+  .tabs { display: flex; gap: 6px; margin-top: 18px; border-bottom: 1px solid var(--line-2); flex-wrap: wrap; }
+  .tab { font-size: 14px; font-weight: 600; color: var(--blue-2); padding: 9px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.on { color: var(--navy); border-bottom-color: var(--gold-deep); }
+  .tab.off { color: #A3ABB9; }
+
+  /* Passo a passo */
+  .steps { list-style: none; margin-top: 22px; counter-reset: p; }
+  .step { counter-increment: p; display: grid; grid-template-columns: 38px 1fr; gap: 16px; padding-bottom: 26px; position: relative; }
+  .step::before { content: counter(p); width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: var(--cream); font-weight: 700; font-size: 14px; display: grid; place-items: center; z-index: 1; }
+  .step::after { content: ""; position: absolute; left: 14.5px; top: 30px; bottom: 0; width: 1px; background: var(--line-2); }
+  .step:last-child::after { display: none; }
+  .step h3 { font-size: 16.5px; font-weight: 700; margin-top: 3px; }
+  .step p { font-size: 15px; margin-top: 2px; }
+  .step .tip { margin-top: 10px; font-size: 13.5px; background: var(--amber-bg); color: var(--amber); border-radius: 8px; padding: 9px 12px; }
+  .shot { margin-top: 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--white); overflow: hidden; max-width: 560px; }
+  .shot .cap { font-size: 12px; color: var(--muted); padding: 8px 12px; border-top: 1px solid var(--line); background: #FAFBFC; }
+  .ph { height: 150px; display: grid; place-items: center; color: #9AA3B3; font-size: 13px; background: repeating-linear-gradient(135deg, #F4F6F9 0 10px, #EEF1F5 10px 20px); }
+  /* Réplica simplificada do aviso do Windows */
+  .smart { background: #1E5AA8; color: #fff; padding: 20px 22px 18px; font-family: 'Segoe UI', system-ui, sans-serif; }
+  .smart b { font-size: 19px; font-weight: 400; display: block; }
+  .smart p { color: #E6EEF8; font-size: 12.5px; margin-top: 8px; }
+  .smart .meta { margin-top: 10px; font-size: 12px; color: #D6E2F2; line-height: 1.7; }
+  .smart .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .smart .btns span { border: 1px solid #fff; padding: 5px 14px; font-size: 12.5px; }
+  .smart .btns span.hl { background: #fff; color: #1E5AA8; outline: 3px solid var(--gold); outline-offset: 2px; font-weight: 600; }
+
+  .prompt-box { margin-top: 10px; display: flex; align-items: center; gap: 12px; background: var(--white); border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px 10px 14px; max-width: 620px; }
+  .prompt-box q { flex: 1; font-weight: 600; font-size: 14.5px; quotes: "“" "”"; }
+
+  .faq { margin-top: 16px; background: var(--white); border: 1px solid var(--line); border-radius: 12px; }
+  .faq div { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .faq div:last-child { border-bottom: 0; }
+  .faq h4 { font-size: 15.5px; font-weight: 700; }
+  .faq p { font-size: 14.5px; margin-top: 4px; }
+
+  @media (max-width: 920px) {
+    .wrap { width: calc(100% - 32px); }
+    header.top nav, .search { display: none; }
+    .head, .layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+    .flow { grid-template-columns: 1fr; gap: 8px; }
+    .arr { width: 1px; height: 22px; margin: 0 auto; }
+    .arr::after { right: -4px; top: auto; bottom: -1px; border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-top: 7px solid var(--gold-deep); border-bottom: 0; }
+    .examples, .req { grid-template-columns: 1fr; }
+    .head h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap row">
+    <a class="wordmark" href="#"><span class="foster">FOSTER</span><span class="bar"></span><span class="partners">PARTNERS</span><span class="product">Central de IA</span></a>
+    <nav><a href="#">Início</a><a class="on" href="#">Apps e conectores</a><a href="#">Skills</a><a href="#">Agentes</a><a href="#">Prompts</a><a href="#">Tutoriais</a><a href="#">Ajuda</a></nav>
+    <div class="search">Buscar na central <kbd>/</kbd></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="crumbs">Início › Apps e conectores › <b>FosterMCP</b></div>
+  <div class="head">
+    <div>
+      <div class="title"><h1>FosterMCP</h1><span class="badge b-ok">Disponível</span></div>
+      <p>Aplicativo que conecta o seu assistente de IA ao Atlas, ao WhatsApp e ao e-mail. Os dados ficam no seu computador.</p>
+      <div class="meta">Versão 0.4.0 · publicada em 16/10/2026 · Windows 10 e 11 · macOS (Apple M1 ou mais novo) · gratuito</div>
+    </div>
+    <div class="dl">
+      <a class="btn btn-gold" href="#">Baixar para Windows · 351 MB</a>
+      <a class="btn btn-line" href="#">Baixar para Mac · 427 MB</a>
+      <small>Já tem instalado? <a href="#" style="text-decoration:underline">Veja como atualizar</a></small>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc">
+      <h4>Nesta página</h4>
+      <a class="on" href="#">O que é</a><a href="#">O que dá para fazer</a><a href="#">Antes de começar</a><a href="#">Instalação</a><a href="#">Conectar ao assistente</a><a href="#">Conectar suas fontes</a><a href="#">Atualizar</a><a href="#">Problemas comuns</a>
+    </aside>
+
+    <article>
+      <section>
+        <h2>O que é</h2>
+        <p>O FosterMCP guarda no seu computador os dados das fontes que você escolher e responde às perguntas do seu assistente. O assistente não acessa o Atlas, o WhatsApp ou o e-mail diretamente: ele pergunta ao FosterMCP, que devolve só o necessário, com a fonte e a data de cada dado.</p>
+        <div class="flow">
+          <div class="node"><h5>Suas fontes</h5><div>Atlas · WhatsApp · E-mail</div></div>
+          <div class="arr"></div>
+          <div class="node core"><h5>No seu computador</h5><div>FosterMCP</div><small>Os dados não saem daqui</small></div>
+          <div class="arr"></div>
+          <div class="node"><h5>Seu assistente</h5><div>Claude · ChatGPT · Cursor</div></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>O que dá para fazer</h2>
+        <p>Exemplos de perguntas e do tipo de resposta que você recebe. Os dados abaixo são fictícios.</p>
+        <div class="examples">
+          <div class="ex"><span class="src">Atlas</span><div class="q">Quais clientes têm vencimentos nesta semana?</div><div class="a"><b>3 clientes</b> somam <b>R$ 1,23 mi</b> até sexta: 900001 (CDB, 18/10), 900014 (LCA, 19/10) e 900027 (debênture, 20/10).</div><div class="cite">Atlas · atualizado em 16/10, 13:25</div></div>
+          <div class="ex"><span class="src">WhatsApp</span><div class="q">O que o cliente 900014 me pediu esta semana?</div><div class="a">Na terça, pediu uma simulação de previdência e perguntou sobre o <b>vencimento da LCA</b>. Ainda <b>sem resposta</b>.</div><div class="cite">WhatsApp · 14/10, 18:02</div></div>
+          <div class="ex"><span class="src">Atlas + E-mail</span><div class="q">Escreva um rascunho de e-mail sobre o vencimento da debênture do 900027.</div><div class="a">Rascunho criado no seu Outlook com as datas e os valores. <b>Nada é enviado</b>: você revisa e envia.</div><div class="cite">Atlas · 16/10 · Outlook (rascunhos)</div></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Antes de começar</h2>
+        <ul class="req">
+          <li><div>Windows 10 ou 11, ou Mac com Apple M1 ou mais novo</div></li>
+          <li><div>Claude Desktop ou o app do ChatGPT instalado<span>Use o assistente que você já assina</span></div></li>
+          <li><div>Seu login do Atlas<span>O mesmo que você usa no navegador</span></div></li>
+          <li class="opt"><div>Celular por perto, se for conectar o WhatsApp<span>Opcional</span></div></li>
+          <li class="opt"><div>Liberação da TI, se for conectar o e-mail<span>Opcional · peça à TI os dois códigos do app</span></div></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Instalação</h2>
+        <p>Cerca de 10 minutos. Escolha o seu sistema.</p>
+        <div class="tabs"><span class="tab on">Windows</span><span class="tab">Mac</span></div>
+        <ol class="steps">
+          <li class="step"><div><h3>Baixe o instalador</h3><p>Clique em <b>Baixar para Windows</b> no topo desta página. O arquivo se chama <b>FosterMCP Setup 0.4.0.exe</b>.</p></div></li>
+          <li class="step"><div><h3>Abra o instalador e passe pelo aviso do Windows</h3><p>O Windows mostra um aviso porque o instalador ainda não tem assinatura digital. Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.</p>
+            <div class="shot"><div class="smart"><b>O Windows protegeu o computador</b><p>O Microsoft Defender SmartScreen impediu que um aplicativo não reconhecido fosse iniciado.</p><div class="meta">Aplicativo: FosterMCP Setup 0.4.0.exe<br>Fornecedor: Fornecedor desconhecido</div><div class="btns"><span class="hl">Executar assim mesmo</span><span>Não executar</span></div></div><div class="cap">Depois de clicar em “Mais informações”, aparece o botão destacado.</div></div>
+            <div class="tip">Se o botão “Executar assim mesmo” não aparecer, o seu Windows bloqueia apps sem assinatura. Veja em Problemas comuns.</div></div></li>
+          <li class="step"><div><h3>Conclua a instalação</h3><p>Mantenha as opções sugeridas e clique em <b>Instalar</b>. Um atalho do FosterMCP aparece na área de trabalho.</p>
+            <div class="shot"><div class="ph">Imagem: tela do instalador com o botão Instalar</div><div class="cap">Print a ser incluído</div></div></div></li>
+          <li class="step"><div><h3>Abra o FosterMCP e escolha onde guardar os dados</h3><p>Na primeira tela, deixe <b>Neste computador</b> e a pasta sugerida. Clique em <b>Continuar</b> e escolha as fontes que quer conectar.</p></div></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Conectar ao seu assistente</h2>
+        <p>O FosterMCP faz a configuração por você. Escolha o seu assistente.</p>
+        <div class="tabs"><span class="tab on">Claude Desktop</span><span class="tab">ChatGPT (aba Codex)</span><span class="tab">Cursor</span><span class="tab">Claude Code</span><span class="tab off">Gemini · em breve</span><span class="tab off">Grok · em breve</span></div>
+        <ol class="steps">
+          <li class="step"><div><h3>No FosterMCP, abra “Seus agentes”</h3><p>Escolha <b>Claude Desktop</b> e clique em <b>Configurar neste computador</b>.</p></div></li>
+          <li class="step"><div><h3>Feche o Claude por completo</h3><p>Fechar a janela não basta. Clique com o botão direito no ícone do Claude, perto do relógio, e escolha <b>Sair</b>. Depois abra o Claude de novo.</p></div></li>
+          <li class="step"><div><h3>Faça a pergunta de teste</h3><p>Numa conversa nova, cole a pergunta abaixo. Se o Claude responder com a data da última atualização, está tudo certo.</p>
+            <div class="prompt-box"><q>Usando o FosterMCP, quando foi a última atualização do Atlas?</q><a class="btn btn-line btn-sm" href="#">Copiar</a></div></div></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Problemas comuns</h2>
+        <div class="faq">
+          <div><h4>O Claude mostra “Server disconnected”</h4><p>Atualize para a versão mais recente do FosterMCP, saia do Claude pelo ícone perto do relógio e abra de novo. Se continuar, use Ajuda → Copiar diagnóstico no FosterMCP e envie para o responsável pela central.</p></div>
+          <div><h4>O Windows bloqueou e não mostra “Executar assim mesmo”</h4><p>Alguns Windows 11 têm o Controle de Aplicativo Inteligente ligado, que bloqueia apps sem assinatura. Fale com o responsável pela central antes de mudar qualquer configuração de segurança.</p></div>
+          <div><h4>O Atlas pede login de novo</h4><p>A sessão do Atlas expirou. Clique em Entrar pela janela do navegador, faça o login e depois em Atualizar Atlas.</p></div>
+          <div><h4>As mensagens novas do WhatsApp não aparecem</h4><p>O FosterMCP precisa estar aberto, mesmo minimizado perto do relógio, para guardar mensagens novas. Marque a opção Abrir com o computador.</p></div>
+        </div>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <p><b style="color:var(--navy)">Precisa de ajuda?</b> No FosterMCP, abra Ajuda → Copiar diagnóstico e envie para o responsável pela central. Iniciativa interna de assessores; não substitui os sistemas oficiais nem as orientações de compliance. A integração com o WhatsApp não é oficial.</p>
+    <a class="wordmark" href="#" style="color:var(--navy)"><span class="foster">FOSTER</span><span class="bar" style="background:var(--navy)"></span><span class="partners">PARTNERS</span></a>
+  </div>
+</footer>
+</body>
+</html>

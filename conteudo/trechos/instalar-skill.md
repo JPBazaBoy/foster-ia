@@ -1,38 +1,28 @@
 ### Claude Desktop
 
-1. Clique em **Baixar a skill (.zip)**. Não descompacte o arquivo.
-2. No Claude, abra **Configurações › Capacidades** e ligue **Execução de código e criação de arquivos**, se ainda não estiver ligada.
-3. Abra **Personalizar › Skills** (em inglês, *Customize › Skills*). Em versões anteriores do app, as skills ficam em **Configurações › Capacidades › Skills**.
-4. Clique em **+**, escolha a opção de enviar uma skill (*Upload skill*) e selecione o arquivo .zip.
-5. Confira que a skill aparece ligada na lista. Ela vale para as conversas novas.
+1. **Baixe o .zip.** Clique em **Baixar a skill (.zip)**. Não descompacte.
+2. **Ligue a execução de código.** No Claude, abra **Configurações › Capacidades** e ligue **Execução de código e criação de arquivos**.
+3. **Envie a skill.** Em **Configurações › Capacidades › Skills** (nas versões mais novas, **Personalizar › Skills**), clique em **+**, escolha enviar uma skill e selecione o arquivo .zip.
+4. **Confira se ela está ligada.** A skill aparece na lista e vale para as conversas novas.
 
 > [!NOTE]
-> **Depende do plano.** As skills aparecem nos planos do Claude que oferecem o recurso; em planos Team e Enterprise, o administrador da organização precisa liberar. Se a opção não aparecer, o seu plano ou a sua organização ainda não liberou.
+> Depende do plano: as skills aparecem nos planos do Claude que oferecem o recurso. Em planos Team e Enterprise, o administrador da organização precisa liberar.
 
-### ChatGPT · aba Codex
+### ChatGPT (aba Codex)
 
-1. Clique em **Baixar a skill (.zip)** e descompacte o arquivo. Sai uma pasta com o nome da skill.
-2. Mova essa pasta para a pasta de skills do Codex:
-   - **Windows:** `C:\Users\<seu usuário>\.codex\skills\`
-   - **Mac:** `~/.codex/skills/` (no Finder, use **Ir › Ir para a Pasta** e cole o caminho)
-
-   Crie a pasta `skills` se ela não existir. No fim, o arquivo `SKILL.md` deve ficar em `.codex/skills/<nome da skill>/SKILL.md`.
-3. Feche o app do ChatGPT por completo e abra de novo. O Codex usa a skill sozinho quando o pedido combina com ela.
+1. **Baixe e descompacte o .zip.** Sai uma pasta com o nome da skill.
+2. **Mova a pasta.** Coloque a pasta em `C:\Users\<seu usuário>\.codex\skills\` (no Mac, `~/.codex/skills/`). Crie a pasta `skills` se ela não existir.
+3. **Reinicie o app do ChatGPT.** O Codex usa a skill quando o pedido combina com ela.
 
 ### Claude Code
 
-1. Clique em **Baixar a skill (.zip)** e descompacte o arquivo. Sai uma pasta com o nome da skill.
-2. Mova essa pasta para a pasta de skills do Claude Code:
-   - **Windows:** `C:\Users\<seu usuário>\.claude\skills\`
-   - **Mac:** `~/.claude/skills/`
+1. **Baixe e descompacte o .zip.** Sai uma pasta com o nome da skill.
+2. **Mova a pasta.** Coloque a pasta em `C:\Users\<seu usuário>\.claude\skills\` (no Mac, `~/.claude/skills/`). Crie a pasta `skills` se ela não existir.
+3. **Reinicie o Claude Code.** A skill vale para as conversas novas.
 
-   Crie a pasta `skills` se ela não existir. No fim, o arquivo `SKILL.md` deve ficar em `.claude/skills/<nome da skill>/SKILL.md`.
-3. Feche o Claude Code e abra de novo.
+### ChatGPT (Projetos e GPTs)
 
-### ChatGPT · Projetos e GPTs
+O ChatGPT não instala skills, mas aceita as mesmas instruções coladas num Projeto.
 
-O ChatGPT não instala skills, mas aceita as mesmas instruções coladas:
-
-1. Clique em **Copiar as instruções**.
-2. **Num Projeto:** abra o projeto, clique no menu **⋯** ao lado do nome e escolha **Instruções**. Cole e salve.
-3. **Num GPT personalizado:** em **GPTs › Criar › Configurar**, cole no campo **Instruções** e salve como **Somente eu**. Criar GPTs pode depender do seu plano.
+1. **Copie as instruções.** Clique em **Copiar as instruções**.
+2. **Cole num Projeto.** Abra o projeto, clique no menu **⋯** ao lado do nome, escolha **Instruções**, cole e salve. Num GPT personalizado, cole em **Configurar › Instruções**.

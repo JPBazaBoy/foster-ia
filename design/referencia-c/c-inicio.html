@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de IA — Início (versão C)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="c-portal.css">
+<style>
+  .intro { padding: 52px 0 36px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 40px; align-items: end; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 34px; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+  .intro p { color: var(--blue-2); margin-top: 12px; max-width: 640px; font-size: 16.5px; }
+  .big-search { margin-top: 22px; display: flex; align-items: center; gap: 10px; background: var(--white); border: 1px solid var(--line-2); border-radius: 10px; padding: 13px 16px; color: #8A94A7; font-size: 15px; max-width: 560px; }
+  .start { background: var(--white); border: 1px solid var(--line); border-left: 3px solid var(--gold-deep); border-radius: 10px; padding: 20px 22px; }
+  .start h3 { font-size: 15px; font-weight: 700; }
+  .start ol { list-style: none; margin-top: 10px; counter-reset: s; }
+  .start li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; font-size: 14.5px; color: var(--blue); }
+  .start li::before { content: counter(s); width: 20px; height: 20px; border-radius: 50%; background: var(--navy); color: var(--cream); font-size: 11.5px; font-weight: 700; display: grid; place-items: center; }
+  .start li span { color: var(--muted); font-size: 13px; }
+  .start .btn { margin-top: 12px; }
+
+  .cat { padding-top: 48px; }
+  .cat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+  .cat-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+  .cat-head a { font-size: 14px; font-weight: 600; color: var(--blue); }
+  .cat-desc { color: var(--blue-2); font-size: 15px; margin-top: 4px; }
+
+  /* Item principal (app) */
+  .app { margin-top: 18px; background: var(--white); border: 1px solid var(--line); border-radius: 14px; display: grid; grid-template-columns: 1.25fr 1fr; overflow: hidden; }
+  .app .info { padding: 26px 28px; }
+  .app .name { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .app .name h3 { font-size: 21px; font-weight: 700; }
+  .app .meta { font-size: 13px; color: var(--muted); }
+  .app p.lead { margin-top: 8px; color: var(--blue); }
+  .can { margin-top: 16px; }
+  .can h4, .where h4 { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .can ul { list-style: none; margin-top: 6px; }
+  .can li { padding: 5px 0 5px 22px; position: relative; font-size: 15px; }
+  .can li::before { content: ""; position: absolute; left: 2px; top: 13px; width: 10px; height: 2px; background: var(--gold-deep); }
+  .where { margin-top: 16px; }
+  .where div { margin-top: 8px; }
+  .app .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .app .shot { background: var(--navy-deep); padding: 22px; display: flex; align-items: center; }
+  .qa { background: #F7F4EC; border-radius: 12px; padding: 18px; font-size: 13.5px; width: 100%; }
+  .qa .q { background: var(--navy); color: var(--cream); border-radius: 10px 10px 3px 10px; padding: 9px 12px; margin-left: 16%; }
+  .qa .tool { display: inline-block; margin-top: 12px; font-size: 11.5px; font-weight: 700; color: var(--blue); background: #E9E4D8; padding: 4px 9px; border-radius: 6px; }
+  .qa table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .qa td { padding: 7px 0; border-bottom: 1px solid #E6E0D3; }
+  .qa td:last-child { text-align: right; font-weight: 700; }
+  .qa .src { margin-top: 8px; font-size: 11px; color: #7A8294; }
+  .shot-cap { font-size: 11.5px; color: #8E98AB; margin-top: 10px; text-align: center; }
+
+  /* Skills */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .card .ex { height: 190px; padding-top: 26px; background: #EEF1F5; border-bottom: 1px solid var(--line); display: grid; place-items: center; position: relative; }
+  .card .ex .lbl { position: absolute; top: 10px; left: 12px; font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .card .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card h3 { font-size: 17px; font-weight: 700; }
+  .card p { font-size: 14.5px; color: var(--blue-2); }
+  .card .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 8px; }
+  .slide { width: 230px; height: 128px; background: var(--white); border-radius: 6px; box-shadow: 0 8px 20px -10px rgba(23,30,45,.4); overflow: hidden; }
+  .slide .t { background: var(--navy); height: 26px; display: flex; align-items: center; padding: 0 10px; color: var(--cream); font-size: 8.5px; font-weight: 700; letter-spacing: .04em; }
+  .slide .b { display: grid; grid-template-columns: 70px 1fr; gap: 10px; padding: 12px 10px; align-items: center; }
+  .slide .ln { height: 6px; border-radius: 3px; background: #DCE1E8; margin: 6px 0; }
+  .memo-mini { width: 210px; background: var(--white); border-radius: 6px; box-shadow: 0 8px 20px -10px rgba(23,30,45,.4); padding: 12px 14px; font-size: 9px; }
+  .memo-mini b { font-size: 11px; display: block; color: var(--navy); }
+  .memo-mini .r { display: flex; justify-content: space-between; border-bottom: 1px solid #ECEFF3; padding: 5px 0; color: var(--blue-2); }
+  .memo-mini .r span:last-child { font-weight: 700; color: var(--navy); }
+
+  /* Listas */
+  .list { margin-top: 18px; background: var(--white); border: 1px solid var(--line); border-radius: 14px; }
+  .list .item { display: grid; grid-template-columns: 1fr 260px 150px 120px; gap: 18px; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+  .list .item:last-child { border-bottom: 0; }
+  .list h3 { font-size: 16px; font-weight: 700; }
+  .list p { font-size: 14px; color: var(--blue-2); }
+  .prompt { display: grid; grid-template-columns: 1fr 120px 90px; gap: 18px; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+  .prompt:last-child { border-bottom: 0; }
+  .prompt q { font-size: 15px; font-weight: 600; quotes: "“" "”"; }
+  .src-tag { font-size: 12px; font-weight: 700; color: var(--gold-ink); }
+  .tut { display: grid; grid-template-columns: 1fr 140px 80px; gap: 18px; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+  .tut:last-child { border-bottom: 0; }
+  .tut h3 { font-size: 15.5px; font-weight: 600; }
+  .tut .k { font-size: 13px; color: var(--muted); }
+  .tut .m { font-size: 13px; color: var(--blue); text-align: right; }
+
+  .two { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+  .news { margin-top: 18px; background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 8px 22px; }
+  .news div { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .news div:last-child { border-bottom: 0; }
+  .news time { display: block; font-size: 12px; font-weight: 700; color: var(--muted); }
+
+  @media (max-width: 920px) {
+    .wrap { width: calc(100% - 32px); }
+    header.top nav, .search { display: none; }
+    .intro, .app, .two { grid-template-columns: 1fr; }
+    .grid3 { grid-template-columns: 1fr; }
+    .list .item { grid-template-columns: 1fr; gap: 8px; }
+    .prompt { grid-template-columns: 1fr auto; }
+    .prompt .src-tag { display: none; }
+    .tut { grid-template-columns: 1fr auto; }
+    .tut .k { display: none; }
+    h1 { font-size: 27px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap row">
+    <a class="wordmark" href="#"><span class="foster">FOSTER</span><span class="bar"></span><span class="partners">PARTNERS</span><span class="product">Central de IA</span></a>
+    <nav><a class="on" href="#">Início</a><a href="#">Apps e conectores</a><a href="#">Skills</a><a href="#">Agentes</a><a href="#">Prompts</a><a href="#">Tutoriais</a><a href="#">Ajuda</a></nav>
+    <div class="search">Buscar na central <kbd>/</kbd></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <div>
+      <h1>Ferramentas de IA para o dia a dia do assessor</h1>
+      <p>Aplicativos, skills, modelos de agentes e prompts para usar com o Claude, o ChatGPT e outros assistentes. Cada item explica o que faz, mostra exemplos e traz o passo a passo para instalar.</p>
+      <div class="big-search">⌕&nbsp; Buscar: vencimentos, apresentação, WhatsApp…</div>
+    </div>
+    <div class="start">
+      <h3>Primeira vez aqui? Siga esta ordem</h3>
+      <ol>
+        <li>Instale o Claude Desktop ou o ChatGPT <span>5 min</span></li>
+        <li>Instale o FosterMCP e conecte o Atlas <span>10 min</span></li>
+        <li>Faça a primeira pergunta ao assistente <span>5 min</span></li>
+      </ol>
+      <a class="btn btn-navy btn-sm" href="#">Abrir o guia completo</a>
+    </div>
+  </div>
+
+  <section class="cat">
+    <div class="cat-head"><h2>Aplicativos e conectores</h2><a href="#">Ver todos →</a></div>
+    <p class="cat-desc">Programas que você instala no computador para o assistente acessar os seus dados.</p>
+    <div class="app">
+      <div class="info">
+        <div class="name"><h3>FosterMCP</h3><span class="badge b-ok">Disponível</span><span class="meta">Versão 0.4.0 · 16/10/2026</span></div>
+        <p class="lead">Conecta o seu assistente ao Atlas, ao WhatsApp e ao e-mail. Os dados ficam no seu computador; o assistente recebe só a resposta de cada pergunta.</p>
+        <div class="can">
+          <h4>O que dá para fazer</h4>
+          <ul>
+            <li>Ver os vencimentos da semana de todos os clientes</li>
+            <li>Preparar o briefing de um cliente antes da reunião</li>
+            <li>Resumir o que um cliente falou no WhatsApp</li>
+          </ul>
+        </div>
+        <div class="where">
+          <h4>Onde funciona</h4>
+          <div><span class="plat">Claude Desktop</span><span class="plat">ChatGPT (aba Codex)</span><span class="plat">Cursor</span><span class="plat">Claude Code</span><span class="plat off">Gemini · em breve</span><span class="plat off">Grok · em breve</span></div>
+        </div>
+        <div class="actions"><a class="btn btn-navy" href="#">Ver passo a passo</a><a class="btn btn-gold" href="#">Baixar para Windows</a><a class="btn btn-line" href="#">Mac</a></div>
+      </div>
+      <div class="shot">
+        <div style="width:100%">
+          <div class="qa">
+            <div class="q">Quais clientes têm vencimentos nesta semana?</div>
+            <span class="tool">FosterMCP · vencimentos</span>
+            <table>
+              <tr><td>Cliente 900001 · CDB</td><td>R$ 310 mil · 18/10</td></tr>
+              <tr><td>Cliente 900014 · LCA</td><td>R$ 520 mil · 19/10</td></tr>
+              <tr><td>Cliente 900027 · Debênture</td><td>R$ 400 mil · 20/10</td></tr>
+            </table>
+            <div class="src">Fonte: Atlas · atualizado em 16/10, 13:25</div>
+          </div>
+          <div class="shot-cap">Exemplo real de uso no Claude Desktop (dados fictícios)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cat">
+    <div class="cat-head"><h2>Skills</h2><a href="#">Ver todas →</a></div>
+    <p class="cat-desc">Ensinam o assistente a fazer uma tarefa do jeito certo. Você instala uma vez e usa sempre que precisar.</p>
+    <div class="grid3">
+      <div class="card">
+        <div class="ex"><span class="lbl">Exemplo de resultado</span>
+          <div class="slide"><div class="t">REVISÃO DE CARTEIRA · CLIENTE 900001</div><div class="b"><svg viewBox="0 0 70 70" width="62" height="62"><circle cx="35" cy="35" r="24" fill="none" stroke="#182949" stroke-width="12" stroke-dasharray="90 61"/><circle cx="35" cy="35" r="24" fill="none" stroke="#D59A3B" stroke-width="12" stroke-dasharray="38 113" stroke-dashoffset="-90"/><circle cx="35" cy="35" r="24" fill="none" stroke="#9FB0CC" stroke-width="12" stroke-dasharray="23 128" stroke-dashoffset="-128"/></svg><div><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:55%"></div></div></div></div>
+        </div>
+        <div class="body"><h3>Apresentação para cliente</h3><p>Gera uma apresentação no padrão Foster com a carteira, os vencimentos e os próximos passos do cliente.</p><div class="foot"><span class="badge b-test">Em teste</span><a class="btn btn-line btn-sm" href="#">Ver skill</a></div></div>
+      </div>
+      <div class="card">
+        <div class="ex"><span class="lbl">Exemplo de resultado</span>
+          <div class="memo-mini"><b>Briefing · Cliente 900001</b><div class="r"><span>Patrimônio na XP</span><span>R$ 2,48 mi</span></div><div class="r"><span>Vence em 30 dias</span><span>R$ 310 mil</span></div><div class="r"><span>Última conversa</span><span>há 6 dias</span></div><div class="r"><span>Pendências</span><span>1 pergunta</span></div></div>
+        </div>
+        <div class="body"><h3>Briefing de reunião</h3><p>Resume a situação do cliente em uma página: carteira, vencimentos, últimas conversas e pendências.</p><div class="foot"><span class="badge b-test">Em teste</span><a class="btn btn-line btn-sm" href="#">Ver skill</a></div></div>
+      </div>
+      <div class="card">
+        <div class="ex"><span class="lbl">Exemplo de resultado</span>
+          <div class="memo-mini"><b>Vencimentos · semana 42</b><div class="r"><span>18/10 · CDB</span><span>R$ 310 mil</span></div><div class="r"><span>19/10 · LCA</span><span>R$ 520 mil</span></div><div class="r"><span>20/10 · Debênture</span><span>R$ 400 mil</span></div><div class="r"><span>Total</span><span>R$ 1,23 mi</span></div></div>
+        </div>
+        <div class="body"><h3>Resumo semanal de vencimentos</h3><p>Toda segunda, lista o que vence na semana e sugere quem contatar primeiro.</p><div class="foot"><span class="badge b-soon">Em breve</span><a class="btn btn-line btn-sm" href="#">Ver skill</a></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="cat">
+      <div class="cat-head"><h2>Modelos de agentes</h2><a href="#">Ver todos →</a></div>
+      <p class="cat-desc">Configurações prontas para montar um assistente com uma função definida.</p>
+      <div class="list">
+        <div class="item" style="grid-template-columns:1fr 130px"><div><h3>Assistente de pré-reunião</h3><p>Claude ou ChatGPT · prepara cada reunião com o cliente</p></div><span class="badge b-test">Em teste</span></div>
+        <div class="item" style="grid-template-columns:1fr 130px"><div><h3>FosterMCP no OpenClaw</h3><p>Agente pessoal que roda no seu computador · avançado</p></div><span class="badge b-adv">Avançado</span></div>
+        <div class="item" style="grid-template-columns:1fr 130px"><div><h3>FosterMCP no Hermes</h3><p>Agente com memória de longo prazo · avançado</p></div><span class="badge b-soon">Em breve</span></div>
+      </div>
+    </section>
+    <section class="cat">
+      <div class="cat-head"><h2>Novidades</h2></div>
+      <p class="cat-desc">O que mudou recentemente.</p>
+      <div class="news">
+        <div><time>16/10/2026</time>FosterMCP 0.4.0: apelidos no WhatsApp, pareamento por código e lista do que faltou no Atlas.</div>
+        <div><time>16/10/2026</time>Nova skill em teste: Apresentação para cliente.</div>
+        <div><time>15/10/2026</time>Central no ar com o FosterMCP e os primeiros tutoriais.</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="cat">
+    <div class="cat-head"><h2>Prompts</h2><a href="#">Ver todos (10) →</a></div>
+    <p class="cat-desc">Perguntas prontas. Copie, cole no seu assistente e troque o nome do cliente.</p>
+    <div class="list">
+      <div class="prompt"><q>Quais clientes têm vencimentos nesta semana e ainda não falaram comigo?</q><span class="src-tag">Atlas + WhatsApp</span><a class="btn btn-line btn-sm" href="#">Copiar</a></div>
+      <div class="prompt"><q>Prepare a minha reunião de amanhã com o cliente 900001.</q><span class="src-tag">Atlas + WhatsApp</span><a class="btn btn-line btn-sm" href="#">Copiar</a></div>
+      <div class="prompt"><q>Resuma o que conversei com o cliente 900014 nos últimos 30 dias.</q><span class="src-tag">WhatsApp</span><a class="btn btn-line btn-sm" href="#">Copiar</a></div>
+      <div class="prompt"><q>Escreva um rascunho de e-mail para o cliente 900027 sobre o vencimento da debênture.</q><span class="src-tag">Atlas + E-mail</span><a class="btn btn-line btn-sm" href="#">Copiar</a></div>
+    </div>
+  </section>
+
+  <section class="cat">
+    <div class="cat-head"><h2>Tutoriais</h2><a href="#">Ver todos →</a></div>
+    <p class="cat-desc">Passo a passo com imagens de cada tela.</p>
+    <div class="list">
+      <div class="tut"><h3>Instalar o FosterMCP no Windows</h3><span class="k">Instalação</span><span class="m">8 min</span></div>
+      <div class="tut"><h3>Conectar o Atlas e fazer a primeira atualização</h3><span class="k">Atlas</span><span class="m">6 min</span></div>
+      <div class="tut"><h3>Escolher conversas e conectar o WhatsApp</h3><span class="k">WhatsApp</span><span class="m">7 min</span></div>
+      <div class="tut"><h3>Usar com o Claude Desktop ou com o ChatGPT</h3><span class="k">Assistentes</span><span class="m">4 min</span></div>
+      <div class="tut"><h3>Instalar uma skill no Claude e no ChatGPT</h3><span class="k">Skills</span><span class="m">5 min</span></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <p><b style="color:var(--navy)">Precisa de ajuda?</b> No FosterMCP, abra Ajuda → Copiar diagnóstico e envie para o responsável pela central. Iniciativa interna de assessores; não substitui os sistemas oficiais nem as orientações de compliance. A integração com o WhatsApp não é oficial.</p>
+    <a class="wordmark" href="#" style="color:var(--navy)"><span class="foster">FOSTER</span><span class="bar" style="background:var(--navy)"></span><span class="partners">PARTNERS</span></a>
+  </div>
+</footer>
+</body>
+</html>

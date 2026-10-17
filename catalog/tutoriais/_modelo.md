@@ -1,23 +1,23 @@
 ---
 # Modelo de tutorial. Copie, renomeie (por exemplo, meu-tutorial.md) e escreva em Markdown.
 titulo: Nome do tutorial
-resumo: Uma frase dizendo o que a pessoa vai aprender.
-plataformas: [claude-desktop, chatgpt-codex, claude-code, cursor]
+resumo: Uma frase dizendo o que a pessoa vai conseguir fazer.
+situacao: em-teste
+plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
+assunto: Assunto curto
+tempo: 5 min
 atualizado: 2026-10-16
-status: rascunho
 palavras: [palavras, para, a busca]
 ---
 
-Um parágrafo de introdução: para quem é e quanto tempo leva.
+Uma frase de introdução: o que é preciso ter em mãos.
 
-## Primeiro passo
+## Passo a passo
 
-1. Escreva os passos numerados.
-2. Use **negrito** para nomes de botões e menus.
+1. **Título curto do passo.** O que clicar, com os nomes dos botões em **negrito**.
+2. **Outro passo.** Listas numeradas viram a linha do tempo numerada.
 
-![Descrição do print, que aparece como "Print pendente" até a imagem existir](/imagens/meu-tutorial/passo-1.png)
+   ![O que o print mostra (aparece como vaga de print até a imagem existir)](/imagens/meu-tutorial/passo-2.png)
 
-## Segundo passo
-
-> [!TIP]
-> Caixas de dica, atenção e observação usam [!TIP], [!WARNING] e [!NOTE].
+> [!WARNING]
+> Avisos importantes usam [!WARNING]; dicas, [!TIP]; observações, [!NOTE].

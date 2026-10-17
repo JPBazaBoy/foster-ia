@@ -1,14 +1,15 @@
-1. Clique em **Baixar para Windows** e abra o arquivo `FosterMCP-Windows.exe`, que fica na pasta **Downloads**.
-2. O Windows deve mostrar **"O Windows protegeu o computador"**. Isso acontece porque o instalador ainda não tem assinatura digital, que é paga. Clique em **Mais informações**.
+1. **Baixe o instalador.** Clique em **Baixar para Windows**, na [página do FosterMCP](/apps/fostermcp/#baixar). O arquivo se chama `FosterMCP-Windows.exe`.
+2. **Abra o instalador e passe pelo aviso do Windows.** O Windows mostra um aviso porque o instalador ainda não tem assinatura digital. Clique em **Mais informações** e depois em **Executar assim mesmo**.
 
-   ![Aviso azul "O Windows protegeu o computador", com o link Mais informações](/imagens/fostermcp/smartscreen-1.png)
+   ```smartscreen
+   arquivo: FosterMCP-Windows.exe
+   ```
 
-3. Confira que o aplicativo é o `FosterMCP-Windows.exe` (o editor aparece como desconhecido) e clique em **Executar assim mesmo**.
+   > [!WARNING]
+   > Se o botão **Executar assim mesmo** não aparecer, ou se o antivírus bloquear o arquivo, pare aqui e veja os [problemas comuns](/apps/fostermcp/#problemas-comuns). Não desative o antivírus.
 
-   ![O mesmo aviso depois de clicar em Mais informações, com o botão Executar assim mesmo](/imagens/fostermcp/smartscreen-2.png)
+3. **Conclua a instalação.** Mantenha as opções sugeridas (instalação só para você e a pasta indicada) e conclua. Um atalho do FosterMCP aparece na área de trabalho e no menu Iniciar.
 
-4. No instalador, mantenha a instalação **só para você** e a pasta sugerida, e conclua. Não use "Executar como administrador".
-5. O atalho **FosterMCP** aparece na área de trabalho e no menu Iniciar. Abra por ele; a primeira abertura pode levar até 1 minuto.
+   ![Tela final do instalador do FosterMCP no Windows](/imagens/fostermcp/instalador-windows.png)
 
-> [!CAUTION]
-> Se o botão **Executar assim mesmo** não aparecer, ou se o antivírus bloquear o arquivo, **pare** e [peça ajuda](/ajuda/#como-pedir-ajuda). Não desative o antivírus. Em computador da empresa, avise a TI antes de instalar.
+4. **Abra o FosterMCP e escolha onde guardar os dados.** Na primeira tela, **Neste computador** já vem marcado. Clique em **Escolher pasta** e crie uma pasta nova e vazia, fora do OneDrive. Depois, marque as fontes que quer usar e clique em **Criar meu espaço**.

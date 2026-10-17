@@ -34,8 +34,8 @@ export function checkFeed(raw, {feedUrl, downloadPage, versionDownload, files}) 
   return problems;
 }
 
-// Tamanho como o Windows mostra (1 MB = 1024 × 1024 bytes), com vírgula decimal.
-export const formatSize = bytes => `${new Intl.NumberFormat('pt-BR', {maximumFractionDigits: 1, minimumFractionDigits: 1}).format(bytes / 1048576)} MB`;
-export const formatDate = value => new Intl.DateTimeFormat('pt-BR', {dateStyle: 'long', timeZone: 'America/Sao_Paulo'}).format(new Date(value));
+// Tamanho como o Windows mostra (1 MB = 1024 × 1024 bytes), arredondado: "351 MB".
+export const formatSize = bytes => `${new Intl.NumberFormat('pt-BR', {maximumFractionDigits: 0}).format(bytes / 1048576)} MB`;
+export const formatDate = value => new Intl.DateTimeFormat('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo'}).format(new Date(value));
 // Datas do catálogo (AAAA-MM-DD) ao meio-dia UTC, para não mudar de dia com o fuso.
 export const formatDay = day => formatDate(`${day}T12:00:00Z`);

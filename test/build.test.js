@@ -16,16 +16,33 @@ const pages = htmlFiles(out);
 const html = Object.fromEntries(pages.map(page => [page, read(join(out, page))]));
 const ids = Object.fromEntries(Object.entries(html).map(([page, text]) => [page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]))]));
 
-test('gera todas as páginas, os arquivos para baixar e o version.json de exemplo só na prévia', () => {
-  for (const page of ['index.html', '404.html', 'catalogo/index.html', 'ajuda/index.html', 'apps/fostermcp/index.html', 'conectores/fostermcp/index.html',
-    'skills/consultas-fostermcp/index.html', 'agentes/assistente-pre-reuniao/index.html', 'prompts/index.html', 'tutoriais/primeiros-passos/index.html'])
+test('gera início, busca, categorias, itens, ajuda e 404, e o version.json de exemplo só na prévia', () => {
+  for (const page of ['index.html', '404.html', 'catalogo/index.html', 'ajuda/index.html', 'apps/index.html', 'skills/index.html', 'agentes/index.html', 'prompts/index.html',
+    'tutoriais/index.html', 'apps/fostermcp/index.html', 'skills/apresentacao-cliente/index.html', 'skills/resumo-vencimentos/index.html',
+    'agentes/fostermcp-openclaw/index.html', 'agentes/fostermcp-hermes/index.html', 'prompts/preparar-reuniao/index.html', 'tutoriais/primeiros-passos/index.html'])
     assert.ok(pages.includes(page), page);
-  for (const folder of ['apps', 'conectores', 'skills', 'agentes', 'prompts', 'tutoriais']) assert.ok(pages.includes(`${folder}/index.html`), folder);
   assert.equal(result.example, true);
   assert.equal(existsSync(join(out, 'fostermcp/version.json')), false, 'o exemplo nunca é publicado como version.json');
-  assert.match(html['apps/fostermcp/index.html'], /Prévia com dados de exemplo/);
+  assert.match(html['apps/fostermcp/index.html'], /Prévia: versão, data e tamanhos de exemplo/);
   assert.ok(existsSync(join(out, '.nojekyll')));
-  assert.deepEqual(result.drafts.sort(), ['agentes/assistente-pre-reuniao', 'skills/consultas-fostermcp']);
+  assert.deepEqual(result.soon.sort(), ['agentes/fostermcp-hermes', 'skills/resumo-vencimentos']);
+});
+
+test('segue o formato do portal: cabeçalho com assinatura e navegação, selos, abas com "em breve" e passo a passo', () => {
+  const app = html['apps/fostermcp/index.html'];
+  assert.match(app, /<span class="assinatura-nome">FOSTER<\/span>.*<span class="assinatura-complemento">PARTNERS<\/span>.*<span class="produto">Central de IA<\/span>/s);
+  for (const label of ['Início', 'Apps e conectores', 'Skills', 'Agentes', 'Prompts', 'Tutoriais', 'Ajuda']) assert.match(app, new RegExp(`<a href="[^"]*"[^>]*>${label}</a>`), label);
+  assert.match(app, /<span class="selo selo-ok">Disponível<\/span>/);
+  assert.match(app, /<span class="aba-em-breve">Gemini · em breve<\/span><span class="aba-em-breve">Grok · em breve<\/span>/);
+  assert.match(app, /<ol class="passos">/);
+  assert.match(app, /class="smartscreen"/);
+  assert.match(app, /<nav class="sumario" aria-label="Nesta página">/);
+  assert.match(html['agentes/fostermcp-openclaw/index.html'], /<span class="selo selo-teste">Em teste<\/span><span class="selo selo-avancado">Avançado<\/span>/);
+  assert.match(html['agentes/fostermcp-hermes/index.html'], /Ainda não disponível/);
+  assert.doesNotMatch(html['agentes/fostermcp-hermes/index.html'], /Copiar as instruções/);
+  assert.match(html['index.html'], /Primeira vez aqui\? Siga esta ordem/);
+  assert.match(html['index.html'], /Exemplo de uso com dados fictícios/);
+  assert.match(html['prompts/index.html'], /<legend>Fonte<\/legend>/);
 });
 
 test('todo link interno aponta para uma página ou arquivo que existe, inclusive as âncoras', () => {
@@ -46,16 +63,20 @@ test('todo link interno aponta para uma página ou arquivo que existe, inclusive
   assert.deepEqual(broken, []);
 });
 
-test('sem rastreadores nem recursos de fora: scripts, estilos e imagens são do próprio site', () => {
+test('sem rastreadores nem recursos de fora: scripts, estilos, fontes e imagens são do próprio site', () => {
   for (const [page, text] of Object.entries(html)) {
     assert.doesNotMatch(text, /<script(?![^>]*\ssrc=)[^>]*>/, `${page}: script embutido violaria a CSP`);
     assert.doesNotMatch(text, /\sstyle="/, `${page}: estilo embutido violaria a CSP`);
     assert.doesNotMatch(text, /<(?:script|img)[^>]*\ssrc="https?:/, `${page}: recurso externo`);
-    assert.doesNotMatch(text, /<link(?![^>]*rel="canonical")[^>]*href="https?:/, `${page}: folha de estilo ou ícone externo`);
+    assert.doesNotMatch(text, /<link(?![^>]*rel="canonical")[^>]*href="https?:/, `${page}: folha de estilo, fonte ou ícone externo`);
     if (!text.includes('<main')) continue;
     assert.match(text, /<meta http-equiv="Content-Security-Policy" content="default-src 'self';/, page);
     assert.match(text, /<meta name="robots" content="noindex, nofollow">/, `${page}: indexar: false em config.js`);
   }
+  const css = read(join(out, 'assets/site.css'));
+  assert.doesNotMatch(css, /url\(\s*['"]?(https?:)?\/\//, 'o CSS não busca nada fora do site');
+  assert.match(css, /^:root\{--noite:#171E2D;--marinho:#182949;/, 'as cores oficiais vêm de config.js');
+  for (const font of ['manrope.woff2', 'cormorant-garamond-500.woff2', 'OFL-manrope.txt', 'OFL-cormorant-garamond.txt']) assert.ok(existsSync(join(out, 'assets/fontes', font)), font);
   assert.doesNotMatch(read(join(out, 'assets/site.js')), /fetch\(|XMLHttpRequest|sendBeacon|navigator\.geolocation/);
 });
 
@@ -78,11 +99,16 @@ test('acessibilidade básica: idioma, um h1, sem saltos de título, ids únicos,
   }
 });
 
-test('a skill vira um .zip com a pasta na raiz e o agente vira AGENTS.md', () => {
-  const entries = readZip(readFileSync(join(out, 'skills/consultas-fostermcp/consultas-fostermcp.zip')));
-  assert.deepEqual(entries.map(entry => entry.name), ['consultas-fostermcp/', 'consultas-fostermcp/SKILL.md']);
-  assert.equal(entries[1].data.toString('utf8'), read(join(root, 'catalog/skills/consultas-fostermcp/SKILL.md')));
-  assert.equal(read(join(out, 'agentes/assistente-pre-reuniao/AGENTS.md')), `${read(join(root, 'catalog/agentes/assistente-pre-reuniao/instrucoes.md')).trim()}\n`);
+test('cada skill com SKILL.md vira um .zip com a pasta na raiz; os agentes viram AGENTS.md', () => {
+  for (const slug of ['apresentacao-cliente', 'briefing-reuniao', 'consultas-fostermcp']) {
+    const entries = readZip(readFileSync(join(out, `skills/${slug}/${slug}.zip`)));
+    assert.deepEqual(entries.map(entry => entry.name), [`${slug}/`, `${slug}/SKILL.md`]);
+    assert.equal(entries[1].data.toString('utf8'), read(join(root, `catalog/skills/${slug}/SKILL.md`)));
+  }
+  assert.equal(existsSync(join(out, 'skills/resumo-vencimentos/resumo-vencimentos.zip')), false, 'skill em breve não tem .zip');
+  for (const slug of ['assistente-pre-reuniao', 'fostermcp-openclaw'])
+    assert.equal(read(join(out, `agentes/${slug}/AGENTS.md`)), `${read(join(root, `catalog/agentes/${slug}/instrucoes.md`)).trim()}\n`);
+  assert.equal(existsSync(join(out, 'agentes/fostermcp-hermes/AGENTS.md')), false);
 });
 
 test('os botões de download usam o instalador mais recente do repositório público', async () => {
@@ -90,9 +116,10 @@ test('os botões de download usam o instalador mais recente do repositório púb
   const page = html['apps/fostermcp/index.html'];
   for (const name of Object.values(config.fostermcp.arquivos)) assert.ok(page.includes(`href="https://github.com/${config.repositorio}/releases/latest/download/${name}"`), name);
   assert.match(html['fostermcp/index.html'], new RegExp(`url=${base}apps/fostermcp/`), 'endereço curto leva à página do app');
+  assert.match(html['conectores/index.html'], new RegExp(`url=${base}apps/`), '/conectores/ leva a Apps e conectores');
 });
 
-test('com o version.json real, a página mostra versão, data e tamanho dele, e a publicação aceita', async () => {
+test('com o version.json real, a página mostra versão, data, tamanhos e novidades dele, e a publicação aceita', async () => {
   const copy = siteCopy();
   const {config} = await loadConfig(copy);
   await assert.rejects(build({root: copy, out: join(copy, '_publicar'), publish: true}), error => error instanceof BuildError && /site-release/.test(error.problems.join()));
@@ -107,11 +134,10 @@ test('com o version.json real, a página mostra versão, data e tamanho dele, e 
   const published = await build({root: copy, out: join(copy, '_publicar'), publish: true});
   assert.equal(published.example, false);
   const page = read(join(copy, '_publicar/apps/fostermcp/index.html'));
-  assert.match(page, /Baixar o FosterMCP <span class="versao">9\.8\.7<\/span>/);
-  assert.match(page, /50,0 MB/);
-  assert.match(page, /70,0 MB/);
-  assert.match(page, /2 de novembro de 2026/);
+  assert.match(page, /Baixar para Windows · 50 MB/);
+  assert.match(page, /Baixar para Mac · 70 MB/);
+  assert.match(page, /Versão 9\.8\.7 · 02\/11\/2026/);
   assert.match(page, /Novidade sintética\./);
-  assert.doesNotMatch(page, /dados de exemplo/);
+  assert.doesNotMatch(page, /de exemplo/);
   assert.equal(read(join(copy, '_publicar', config.fostermcp.feed)), read(join(copy, 'public', config.fostermcp.feed)));
 });

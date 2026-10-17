@@ -3,6 +3,7 @@ import {join} from 'node:path';
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+export const COLOR_KEYS = ['noite', 'marinho', 'azul', 'creme', 'dourado', 'douradoDetalhe', 'douradoTexto', 'fundo', 'borda'];
 
 // Confere site/config.js e devolve a configuração com os campos derivados (base, urls). Erros em português.
 export function checkConfig(config) {
@@ -12,18 +13,18 @@ export function checkConfig(config) {
   if (!config || typeof config !== 'object') return {problems: [{file: 'config.js', message: 'O arquivo precisa exportar um objeto (export default {...}).'}]};
   if (!text(config.nome, 40)) bad('nome', 'texto de até 40 caracteres.');
   if (!text(config.descricao, 200)) bad('descricao', 'texto de até 200 caracteres.');
-  if (!config.marca || !text(config.marca.sigla, 4)) bad('marca.sigla', 'de 1 a 4 caracteres.');
-  if (!HEX.test(config.marca?.cor ?? '')) bad('marca.cor', 'cor no formato #RRGGBB.');
-  if (!HEX.test(config.marca?.corTemaEscuro ?? '')) bad('marca.corTemaEscuro', 'cor no formato #RRGGBB.');
+  if (!text(config.assinatura?.nome, 20) || (config.assinatura?.complemento !== '' && !text(config.assinatura?.complemento, 20)))
+    bad('assinatura', 'nome e complemento, cada um com até 20 caracteres (complemento pode ficar vazio).');
+  for (const key of COLOR_KEYS) if (!HEX.test(config.cores?.[key] ?? '')) bad(`cores.${key}`, 'cor no formato #RRGGBB.');
   if (!/^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(config.repositorio ?? '')) bad('repositorio', 'use dono/nome, por exemplo JPBazaBoy/foster-ia.');
   let address = null;
   try { address = new URL(config.endereco); } catch { /* tratado abaixo */ }
   if (!address || address.protocol !== 'https:' || address.search || address.hash || address.username || address.password || !address.pathname.endsWith('/'))
     bad('endereco', 'endereço https terminado em /, sem ? nem #.');
   if (typeof config.indexar !== 'boolean') bad('indexar', 'true ou false.');
-  if (!config.contato || !text(config.contato.texto, 300)) bad('contato.texto', 'texto de até 300 caracteres.');
+  if (!text(config.contato?.nome, 120)) bad('contato.nome', 'texto de até 120 caracteres, como "o responsável pela central".');
   if (config.contato?.link && !/^(https:\/\/|mailto:)/.test(config.contato.link)) bad('contato.link', 'vazio, https://… ou mailto:….');
-  if (!text(config.aviso, 600)) bad('aviso', 'texto de até 600 caracteres.');
+  if (!text(config.aviso, 400)) bad('aviso', 'texto de até 400 caracteres.');
   const app = config.fostermcp;
   if (!app || !FILE_NAME.test(app.arquivos?.windows ?? '') || !FILE_NAME.test(app.arquivos?.mac ?? '')) bad('fostermcp.arquivos', 'nomes fixos dos instaladores, sem espaços.');
   if (!/^[a-z0-9-]+(\/[a-z0-9-]+)*\/version\.json$/.test(app?.feed ?? '')) bad('fostermcp.feed', 'caminho como fostermcp/version.json.');

@@ -1,45 +1,54 @@
 ---
-# Modelo de conector (MCP). Copie, renomeie e preencha.
+# Modelo de conector (MCP). Copie, renomeie e preencha. Aparece em Apps e conectores.
 titulo: Nome do conector
-resumo: Uma frase dizendo que dados o conector traz para o assistente.
-plataformas: [claude-desktop, chatgpt-codex, claude-code, cursor]
+resumo: Conector que dá ao assistente acesso a [fonte]. A primeira frase diz o que ele é.
+situacao: em-teste
+plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 atualizado: 2026-10-16
-status: rascunho
 palavras: [palavras, para, a busca]
 ---
 
-## O que faz
+## O que é
 
-O que o assistente passa a conseguir fazer com este conector.
+O que o conector faz e onde os dados ficam.
 
-## Para quem
+## O que dá para fazer
 
-Quem vai se beneficiar.
+```exemplos
+- fonte: Nome da fonte
+  pergunta: Pergunta de exemplo?
+  resposta: Resposta de exemplo, com dados fictícios.
+  citacao: Fonte · data
+```
 
-## Requisitos
+## Antes de começar
 
-- O que precisa estar instalado ou liberado antes.
+```requisitos
+- texto: O que precisa estar instalado
+```
 
-## Como instalar
+## Instalação
 
-Uma aba (###) para cada plataforma da lista "plataformas" do cabeçalho:
+Uma aba (###) para cada plataforma da lista "plataformas" do cabeçalho.
 
 ### Claude Desktop
 
-1. Passo a passo.
+1. **Primeiro passo.** O que clicar.
 
-### ChatGPT · aba Codex
+### ChatGPT (aba Codex)
 
-1. Passo a passo.
-
-### Claude Code
-
-1. Passo a passo.
+1. **Primeiro passo.** O que clicar.
 
 ### Cursor
 
-1. Passo a passo.
+1. **Primeiro passo.** O que clicar.
 
-## Privacidade
+### Claude Code
 
-Que dados o conector lê, onde eles ficam e o que vai para a IA.
+1. **Primeiro passo.** O que clicar.
+
+## Problemas comuns
+
+### Um problema
+
+O que fazer.

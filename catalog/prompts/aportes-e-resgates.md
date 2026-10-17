@@ -1,27 +1,23 @@
 ---
 titulo: Aportes e resgates do mês
-resumo: Mostra quem aportou e quem resgatou no mês, para você saber para quem ligar primeiro.
-plataformas: [claude-desktop, chatgpt-codex, claude-code, cursor]
+resumo: Separa os aportes e os resgates do mês, do maior para o menor.
+situacao: disponivel
+plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
+fontes: [atlas]
 atualizado: 2026-10-16
-status: publicado
-ordem: 7
+ordem: 8
 requer: [apps/fostermcp]
 ferramentas: [get_client_flows]
-palavras: [captação, aporte, resgate, mês, meus números]
+palavras: [captação, aporte, resgate, mês]
 ---
-
-## O que faz
-
-Separa os aportes e os resgates do mês, do maior para o menor, e destaca os maiores resgates.
 
 ## Prompt
 
-Use o fostermcp para listar os clientes com aportes e resgates no [mês atual ou mês anterior], com o get_client_flows (direction both).
-Separe aportes e resgates, do maior para o menor, com o valor líquido de cada cliente. Destaque os 5 maiores resgates para eu ligar primeiro e informe a data dos dados.
+Quem aportou e quem resgatou neste mês, do maior para o menor valor?
 
-## Requisitos
+## Quando usar
 
-- [FosterMCP](/apps/fostermcp/) com o Atlas habilitado e atualizado no mês.
+No acompanhamento mensal de captação. Os dados vêm do Meus Números do Atlas.
 
 ## Como usar
 

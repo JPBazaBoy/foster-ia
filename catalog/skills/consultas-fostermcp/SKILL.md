@@ -5,7 +5,7 @@ description: Orienta consultas aos dados do assessor de investimentos pelo Foste
 
 # Consultas no FosterMCP
 
-Rascunho para revisão. Estas instruções valem quando as ferramentas do servidor `fostermcp` estiverem disponíveis. Responda sempre em português do Brasil.
+Em teste. Estas instruções valem quando as ferramentas do servidor `fostermcp` estiverem disponíveis. Responda sempre em português do Brasil.
 
 ## Antes de tudo
 

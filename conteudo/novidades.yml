@@ -1,10 +1,10 @@
 # Novidades da página inicial. A mais nova aparece primeiro (a ordem é pela data).
 # link é opcional e começa com / (por exemplo, /apps/fostermcp/).
 - data: 2026-10-16
-  titulo: A central em revisão
-  texto: Primeira versão do site, com o FosterMCP, uma skill e um agente em rascunho, 10 prompts prontos e 5 tutoriais.
-  link: /catalogo/
+  texto: "FosterMCP 0.4.0, em revisão: apelidos no WhatsApp, pareamento por código e lista do que faltou no Atlas."
+  link: /apps/fostermcp/
 - data: 2026-10-16
-  titulo: FosterMCP 0.3.2
-  texto: Versão do piloto. O WhatsApp volta a mostrar o QR code, o app de Mac abre pelo **Abrir Mesmo Assim**, o Atlas ficou mais simples e chegou o botão **Copiar diagnóstico**.
-  link: /apps/fostermcp/#novidades
+  texto: "Skills em teste: Apresentação para cliente e Briefing de reunião."
+  link: /skills/
+- data: 2026-10-16
+  texto: "Central em revisão, com o FosterMCP, 10 prompts e os primeiros tutoriais."

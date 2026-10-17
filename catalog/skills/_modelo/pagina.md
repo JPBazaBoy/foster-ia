@@ -1,10 +1,11 @@
 ---
 # Página da skill no site. A pasta inteira (menos este arquivo) vira o .zip para download.
 titulo: Nome da skill
-resumo: Uma frase dizendo o que a skill ensina ao assistente.
+resumo: Skill que [faz o quê]. A primeira frase diz o que ela é.
+situacao: em-teste
 plataformas: [claude-desktop, chatgpt-codex, claude-code, chatgpt]
+fontes: [atlas]
 atualizado: 2026-10-16
-status: rascunho
 versao: "0.1"
 palavras: [palavras, para, a busca]
 ---
@@ -13,24 +14,34 @@ palavras: [palavras, para, a busca]
 
 O que muda nas respostas com a skill instalada.
 
-## Para quem
+## Exemplo de resultado
 
-Quem vai usar.
+```resultado
+tipo: memo
+titulo: Título do resultado
+linhas:
+  - [Rótulo, Valor fictício]
+  - [Outro rótulo, Outro valor]
+```
 
-## Exemplos de uso
+## Onde funciona
 
-- Pedidos que passam a funcionar melhor.
+Em quais assistentes e planos ela funciona.
 
-## Requisitos
-
-- O que precisa estar instalado.
-
-## Como instalar
+## Instalação
 
 O arquivo da skill se chama `{{item.zipNome}}` e a pasta dentro dele, `{{item.pasta}}`.
 
 <!-- incluir: instalar-skill -->
 
-## Privacidade
+## Como usar
 
-A skill guarda ou envia algum dado? Explique.
+```prompt
+Pedido de exemplo para usar a skill.
+```
+
+## Problemas comuns
+
+### Um problema
+
+O que fazer.

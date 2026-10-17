@@ -1,52 +1,53 @@
 ---
-titulo: Assistente de pré-reunião com cliente
-resumo: Modelo de instruções que prepara um briefing de uma página antes de cada reunião, com carteira, vencimentos, conversas e pauta.
-plataformas: [claude-desktop, chatgpt-codex, chatgpt, claude-code]
+titulo: Assistente de pré-reunião
+resumo: Modelo de agente que prepara cada reunião com o cliente. Você diz o cliente e ele entrega um briefing de uma página, com carteira, vencimentos, conversas e pauta.
+situacao: em-teste
+plataformas: [claude-desktop, chatgpt, chatgpt-codex, claude-code]
+fontes: [atlas, whatsapp, email]
 atualizado: 2026-10-16
-status: rascunho
-destaque: true
 versao: "0.1"
+destaque: true
 ordem: 1
 requer: [apps/fostermcp]
 ferramentas: [get_workspace_overview, get_sync_status, search_clients, get_client_profile, get_client_maturities, get_client_briefing, search_people, get_whatsapp_person_messages, search_foster_emails, get_foster_email, list_foster_events, create_foster_email_draft]
-palavras: [reunião, briefing, pauta, cliente, preparação, agente, projeto]
+palavras: [reunião, briefing, pauta, cliente, preparação, projeto]
 ---
 
-## O que faz
+## Para que serve
 
-Transforma o assistente num ajudante de preparação de reuniões. Você diz o cliente e, se quiser, a data e o objetivo; ele consulta o FosterMCP e entrega um briefing de uma página:
+Para ter um assistente fixo de preparação de reuniões. Dentro do projeto, basta dizer o cliente e, se quiser, a data e o objetivo. Ele consulta o FosterMCP e entrega:
 
-1. resumo do cliente em 3 linhas;
-2. carteira por classe de ativo, com a data dos dados;
-3. vencimentos e eventos de caixa dos próximos 30 dias;
-4. últimos contatos por WhatsApp e e-mail;
-5. pendências e promessas;
-6. pontos de atenção;
-7. pauta sugerida;
-8. fontes de cada informação.
+- resumo do cliente em 3 linhas;
+- carteira por classe, com a data dos dados;
+- vencimentos e eventos dos próximos 30 dias;
+- últimos contatos por WhatsApp e e-mail;
+- pendências, pontos de atenção e pauta sugerida;
+- fontes de cada informação.
 
-## Para quem
+Depois da reunião, ele escreve o e-mail de follow-up e só cria o rascunho com o seu "pode criar".
 
-Assessores que querem chegar a cada reunião com o histórico do cliente em mãos, sem abrir o Atlas, o WhatsApp e o Outlook um por um.
+## O que precisa
 
-## Exemplos de uso
+```requisitos
+- texto: FosterMCP conectado ao assistente, com o Atlas
+  nota: WhatsApp e e-mail deixam o briefing mais completo
+- texto: Claude Desktop, a aba Codex do ChatGPT ou o Claude Code
+  nota: Para consultar os seus dados
+- texto: Projetos e GPTs do ChatGPT
+  nota: Funcionam sem o FosterMCP, só com o que você escrever
+  opcional: true
+```
 
-Dentro do projeto (ou da pasta) do agente:
-
-- *"Reunião amanhã às 10h com o cliente 900001, para falar dos vencimentos."*
-- *"Prepare a reunião com a Maria Souza."* Se houver duas Marias Souza, ele pergunta qual é.
-- *"Agora escreva o e-mail de follow-up com o que combinamos."* Ele mostra o texto e só cria o rascunho depois do seu "pode criar".
-
-## Requisitos
-
-- O [FosterMCP](/apps/fostermcp/) conectado ao assistente, com o Atlas habilitado. WhatsApp e e-mail deixam o briefing mais completo.
-- Para consultar os dados: Claude Desktop, a aba Codex do app do ChatGPT ou Claude Code.
-- Em Projetos e GPTs do ChatGPT, o agente funciona só com o que você escrever, sem consultar os dados.
-
-## Como instalar
+## Passo a passo
 
 <!-- incluir: usar-agente -->
 
-## Privacidade
+## Exemplos de pedido
 
-O modelo é só um texto de instruções: ele não guarda nem envia dados. As consultas passam pelo FosterMCP, no seu computador, e o resultado vai para o serviço de IA que você usa, conforme as regras dele. Num Projeto ou GPT sem o FosterMCP, tudo o que você colar vai para o ChatGPT: siga as regras da empresa sobre dados de clientes.
+```prompt
+Reunião amanhã às 10h com o cliente [código], para falar dos vencimentos.
+```
+
+```prompt
+Agora escreva o e-mail de follow-up com o que combinamos.
+```

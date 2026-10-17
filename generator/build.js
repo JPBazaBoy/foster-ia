@@ -3,12 +3,14 @@ import {existsSync} from 'node:fs';
 import {join, dirname, resolve, basename} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
 import {loadSite} from './catalog.js';
 import {checkFeed} from './feed.js';
 import {renderSite} from './templates.js';
 import {createZip} from './zip.js';
 
 export const SITE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
 export const EXAMPLE_FEED = 'conteudo/exemplo-version.json';
 
 export class BuildError extends Error {
@@ -33,24 +35,29 @@ export async function loadFeed(root, config, {publish = false} = {}) {
   return {data, example: path !== real};
 }
 
-// Cor do texto sobre a cor da marca, pelo contraste (WCAG) com branco e com quase preto.
-function textOn(hex) {
-  const channel = value => { const c = parseInt(value, 16) / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
-  const [r, g, b] = [1, 3, 5].map(i => channel(hex.slice(i, i + 2)));
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return (1.05 / (luminance + 0.05)) >= ((luminance + 0.05) / 0.0544) ? '#ffffff' : '#0b0e15';
-}
+// Fontes servidas pelo próprio site (sem Google Fonts): Manrope em tudo, Cormorant Garamond só na assinatura.
+const FONTS = [
+  ['@fontsource-variable/manrope', 'manrope-latin-wght-normal.woff2', 'manrope.woff2', 'OFL-manrope.txt'],
+  ['@fontsource/cormorant-garamond', 'cormorant-garamond-latin-500-normal.woff2', 'cormorant-garamond-500.woff2', 'OFL-cormorant-garamond.txt'],
+];
+const CSS_COLORS = {noite: 'noite', marinho: 'marinho', azul: 'azul', creme: 'creme', dourado: 'dourado', douradoDetalhe: 'dourado-detalhe', douradoTexto: 'dourado-texto', fundo: 'fundo-leitura', borda: 'borda-base'};
 
 async function buildAssets(root, config, dev) {
-  const brand = `:root{--marca:${config.marca.cor};--marca-texto:${textOn(config.marca.cor)};--marca-escuro:${config.marca.corTemaEscuro};--marca-escuro-texto:${textOn(config.marca.corTemaEscuro)}}\n`;
+  const colors = `:root{${Object.entries(CSS_COLORS).map(([key, name]) => `--${name}:${config.cores[key]}`).join(';')}}\n`;
   const files = new Map([
-    ['assets/site.css', brand + await readFile(join(root, 'assets/site.css'), 'utf8')],
+    ['assets/site.css', colors + await readFile(join(root, 'assets/site.css'), 'utf8')],
     ['assets/site.js', await readFile(join(root, 'assets/site.js'), 'utf8')],
-    ['assets/tema.js', await readFile(join(root, 'assets/tema.js'), 'utf8')],
-    ['favicon.svg', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="${config.marca.cor}"/><path d="M32 12l4.8 12.4L49 29l-12.2 4.6L32 46l-4.8-12.4L15 29l12.2-4.6L32 12Z" fill="${textOn(config.marca.cor)}"/></svg>\n`],
+    ['favicon.svg', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="${config.cores.noite}"/><path d="M32 13l4.6 11.9L48.5 29l-11.9 4.4L32 45.3l-4.6-11.9L15.5 29l11.9-4.1L32 13Z" fill="${config.cores.dourado}"/></svg>\n`],
   ]);
+  for (const [pkg, source, target, license] of FONTS) {
+    // As fontes vêm das dependências do gerador, não da pasta de conteúdo (os testes constroem cópias dela).
+    let dir;
+    try { dir = dirname(require.resolve(`${pkg}/LICENSE`)); } catch { throw new BuildError([`Falta a fonte ${pkg}. Rode npm --prefix site ci.`]); }
+    files.set(`assets/fontes/${target}`, await readFile(join(dir, 'files', source)));
+    files.set(`assets/fontes/${license}`, await readFile(join(dir, 'LICENSE')));
+  }
   if (dev) files.set('assets/recarregar.js', "new EventSource('/__recarregar').addEventListener('mudou', () => location.reload());\n");
-  const version = createHash('sha256').update([...files.values()].join('')).digest('hex').slice(0, 10);
+  const version = createHash('sha256').update([...files.values()].map(content => typeof content === 'string' ? content : content.toString('base64')).join('')).digest('hex').slice(0, 10);
   return {files, version};
 }
 
@@ -65,8 +72,9 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), publis
   const {files, pendingImages} = renderSite(site, {imageExists, assets});
   for (const [path, content] of assets.files) files.set(path, content);
   for (const item of site.items) {
-    if (item.type === 'skill') files.set(`${item.url}${item.slug}.zip`, createZip(item.skill.files, {date: new Date(`${item.meta.atualizado}T12:00:00Z`)}));
-    if (item.type === 'agente') files.set(`${item.url}AGENTS.md`, `${item.instructions}\n`);
+    // Itens em breve podem ainda não ter SKILL.md ou instrucoes.md: sem arquivo para baixar.
+    if (item.skill) files.set(`${item.url}${item.slug}.zip`, createZip(item.skill.files, {date: new Date(`${item.meta.atualizado}T12:00:00Z`)}));
+    if (item.instructions) files.set(`${item.url}AGENTS.md`, `${item.instructions}\n`);
   }
   files.set('.nojekyll', '');
   await rm(out, {recursive: true, force: true});
@@ -78,13 +86,15 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), publis
   }
   const unique = [...new Map(pendingImages.map(image => [image.path, image])).values()];
   return {out, pages: [...files.keys()].filter(path => path.endsWith('.html')).length, pendingImages: unique, example: site.feed.example,
-    drafts: site.items.filter(item => item.meta.status === 'rascunho').map(item => item.id), config: site.config};
+    testing: site.items.filter(item => item.meta.situacao === 'em-teste').map(item => item.id),
+    soon: site.items.filter(item => item.meta.situacao === 'em-breve').map(item => item.id), config: site.config};
 }
 
 export function report(result, log = console.log) {
   log(`Site gerado em ${result.out}: ${result.pages} páginas.`);
   if (result.example) log('Aviso: sem public/fostermcp/version.json; a página de download usa dados de exemplo.');
-  if (result.drafts.length) log(`Rascunhos (aparecem com a faixa "Rascunho para revisão"): ${result.drafts.join(', ')}.`);
+  if (result.testing.length) log(`Em teste: ${result.testing.join(', ')}.`);
+  if (result.soon.length) log(`Em breve: ${result.soon.join(', ')}.`);
   if (result.pendingImages.length) log(`Prints pendentes (${result.pendingImages.length}):\n${result.pendingImages.map(image => `  - site/public/${image.path}: ${image.alt}`).join('\n')}`);
 }
 

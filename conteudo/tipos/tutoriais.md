@@ -1,4 +1,3 @@
 ---
-resumo: Passo a passo para instalar, conectar e usar bem cada item da central.
+resumo: Passo a passo com imagens de cada tela.
 ---
-Guias curtos para fazer uma coisa de cada vez. Se travar em algum passo, veja [como pedir ajuda](/ajuda/#como-pedir-ajuda).

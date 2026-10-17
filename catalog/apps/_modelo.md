@@ -1,46 +1,70 @@
 ---
-# Modelo de app. Copie, renomeie e preencha. Apps com download próprio precisam de ajuste no
-# gerador (hoje só o FosterMCP tem version.json); sem o campo download, a página não mostra botão de baixar.
+# Modelo de aplicativo. Copie, renomeie e preencha. O quadro de download com version.json só existe para o
+# FosterMCP (download: fostermcp); outro app com download próprio pede um ajuste pequeno no gerador.
 titulo: Nome do app
-resumo: Uma frase dizendo o que o app faz.
+resumo: Aplicativo que [faz o quê]. A primeira frase diz o que ele é.
+situacao: em-teste
 plataformas: [claude-desktop, chatgpt-codex]
+compatibilidade: Windows 10 e 11 · gratuito
+usos:
+  - Uma coisa que dá para fazer
 atualizado: 2026-10-16
-status: rascunho
 palavras: [palavras, para, a busca]
 ---
 
-## O que faz
+## O que é
 
 O que o app faz, em linguagem simples.
 
-## Para quem
+```fluxo
+- rotulo: Origem
+  texto: De onde vêm os dados
+- rotulo: No seu computador
+  texto: Nome do app
+  destaque: true
+- rotulo: Seu assistente
+  texto: Claude · ChatGPT
+```
 
-Quem vai usar.
+## O que dá para fazer
 
-## Exemplos de uso
+```exemplos
+- fonte: Nome da fonte
+  pergunta: Pergunta de exemplo?
+  resposta: Resposta de exemplo, com dados fictícios.
+  citacao: Fonte · data
+```
 
-- Exemplos de pedidos ou situações.
+## Antes de começar
 
-## Requisitos
+```requisitos
+- texto: Sistema e contas necessários
+- texto: Algo opcional
+  opcional: true
+```
 
-- Sistema, contas e acessos necessários.
-
-## Como instalar
+## Instalação
 
 ### Windows
 
-1. Passo a passo no Windows.
+1. **Baixe o instalador.** Onde clicar.
 
 ### Mac
 
-1. Passo a passo no Mac.
+1. **Baixe o instalador.** Onde clicar.
 
-## Perguntas frequentes
+## Conectar ao seu assistente
 
-### Uma pergunta?
+### Claude Desktop
 
-A resposta.
+1. **Primeiro passo.** O que clicar.
 
-## Privacidade
+### ChatGPT (aba Codex)
 
-Onde os dados ficam e o que vai para a IA.
+1. **Primeiro passo.** O que clicar.
+
+## Problemas comuns
+
+### Um problema
+
+O que fazer.

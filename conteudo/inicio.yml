@@ -1,29 +1,15 @@
-# Textos da página inicial. Dá para usar **negrito** e [links](/catalogo/) como no Markdown.
-sobretitulo: Grátis · sem login · em português
-titulo: Tudo de IA para o seu dia a dia de assessor
-subtitulo: Apps, conectores, skills, agentes, prompts e tutoriais para usar o Claude e o ChatGPT com os seus dados, com passo a passo para quem não é técnico.
-sobre:
-  titulo: O que é a central
-  texto: |
-    Um lugar só para encontrar e instalar o que ajuda o assessor a usar IA no trabalho. O primeiro item é o **FosterMCP**, que leva os seus dados do Atlas, do WhatsApp e do e-mail até o seu assistente. Em volta dele, modelos prontos para tirar proveito disso: skills, agentes, prompts e tutoriais, sempre com o passo a passo para o Claude e para o ChatGPT.
-  pontos:
-    - icone: lock
-      titulo: Seus dados ficam com você
-      texto: O FosterMCP roda no seu computador. Não existe servidor central nem base compartilhada do escritório.
-    - icone: spark
-      titulo: Claude ou ChatGPT
-      texto: Use o assistente que você já tem. As instruções mudam conforme a sua escolha.
-    - icone: people
-      titulo: Para quem não é técnico
-      texto: Passo a passo com prints, perguntas frequentes e o que fazer quando algo não funciona.
-passos:
-  - titulo: Escolha seu assistente
-    texto: O FosterMCP funciona com o Claude e com o ChatGPT. Use o que você já tem.
-    claude: Instale o **Claude Desktop**, o app do Claude para Windows e Mac, e entre com a sua conta.
-    chatgpt: Instale o **app do ChatGPT** para computador e use a aba **Codex**. A aba Codex depende do seu plano.
-  - titulo: Instale o FosterMCP
-    texto: Baixe e instale. O Windows mostra um aviso porque o instalador ainda não tem assinatura digital; [veja como passar por ele](/apps/fostermcp/#como-instalar).
-  - titulo: Conecte e faça a primeira pergunta
-    texto: No FosterMCP, abra **Seus agentes** e clique em **Configurar neste computador**. Feche o assistente por completo, abra de novo e faça a pergunta abaixo.
-    pergunta: Use o fostermcp para me dizer quais fontes estão disponíveis e se os dados estão atualizados.
-    link: /tutoriais/primeiros-passos/
+# Textos da página inicial. Dá para usar **negrito** e [links](/catalogo/) nos passos.
+titulo: Ferramentas de IA para o dia a dia do assessor
+texto: Aplicativos, skills, modelos de agentes e prompts para usar com o Claude, o ChatGPT e outros assistentes. Cada item explica o que faz, mostra exemplos e traz o passo a passo para instalar.
+busca: "Buscar: vencimentos, apresentação, WhatsApp…"
+primeiraVez:
+  titulo: Primeira vez aqui? Siga esta ordem
+  passos:
+    - texto: Instale o Claude Desktop ou o ChatGPT
+      tempo: 5 min
+    - texto: Instale o FosterMCP e conecte o Atlas
+      tempo: 10 min
+    - texto: Faça a primeira pergunta ao assistente
+      tempo: 5 min
+  botao: Abrir o guia completo
+  link: /tutoriais/primeiros-passos/
