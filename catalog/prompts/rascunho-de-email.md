@@ -1,7 +1,7 @@
 ---
 titulo: Rascunho de e-mail
 resumo: Escreve um e-mail para o cliente e, depois do seu "pode criar", deixa como rascunho no Outlook.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas, email]
 atualizado: 2026-10-16

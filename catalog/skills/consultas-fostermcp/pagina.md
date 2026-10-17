@@ -1,7 +1,7 @@
 ---
 titulo: Consultas no FosterMCP
 resumo: Skill que ensina o assistente a usar bem as ferramentas do FosterMCP. Ele confere de quando são os dados, acha o cliente certo e cita a fonte de cada número.
-situacao: em-teste
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, claude-code]
 fontes: [atlas, whatsapp, email]
 atualizado: 2026-10-16

@@ -1,7 +1,7 @@
 ---
 titulo: Vencimentos sem contato recente
 resumo: Cruza os vencimentos da semana com o WhatsApp para achar quem ainda não falou com você.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas, whatsapp]
 atualizado: 2026-10-16

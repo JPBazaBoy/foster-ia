@@ -1,7 +1,7 @@
 ---
 titulo: FosterMCP no Hermes
 resumo: Modelo para usar o FosterMCP no Hermes Agent, da Nous Research, um agente com memória de longo prazo. Ainda em preparação.
-situacao: em-breve
+situacao: rascunho
 avancado: true
 plataformas: [hermes]
 fontes: [atlas, whatsapp, email]

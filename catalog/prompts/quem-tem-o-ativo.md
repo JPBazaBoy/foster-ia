@@ -1,7 +1,7 @@
 ---
 titulo: Quem tem um ativo
 resumo: Lista os clientes da sua base que têm um ativo, com o valor de cada um e o total.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas]
 atualizado: 2026-10-16

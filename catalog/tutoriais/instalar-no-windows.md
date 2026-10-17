@@ -1,7 +1,7 @@
 ---
 titulo: Instalar o FosterMCP no Windows
 resumo: Tutorial de instalação no Windows, com o aviso "O Windows protegeu o computador".
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Instalação
 tempo: 8 min

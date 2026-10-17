@@ -1,7 +1,7 @@
 ---
 titulo: Usar um modelo de agente
 resumo: Tutorial para colocar as instruções de um agente num Projeto do Claude ou do ChatGPT, ou no AGENTS.md.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt, chatgpt-codex, claude-code]
 assunto: Agentes
 tempo: 5 min

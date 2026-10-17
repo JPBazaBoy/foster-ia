@@ -1,7 +1,7 @@
 ---
 titulo: Assunto no WhatsApp
 resumo: Procura um assunto nas conversas do WhatsApp e mostra quem falou dele e quando.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [whatsapp]
 atualizado: 2026-10-16

@@ -1,7 +1,7 @@
 ---
 titulo: FosterMCP no GrokBot
 resumo: Usar o FosterMCP com o GrokBot. Avançado; depende de um conector pela internet, ainda em preparação.
-situacao: em-breve
+situacao: rascunho
 avancado: true
 plataformas: [grokbot]
 atualizado: 2026-10-16

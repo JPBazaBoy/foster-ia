@@ -1,7 +1,7 @@
 ---
 titulo: Assistente de pré-reunião
 resumo: Modelo de agente que prepara cada reunião com o cliente. Você diz o cliente e ele entrega um briefing de uma página, com carteira, vencimentos, conversas e pauta.
-situacao: em-teste
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt, chatgpt-codex, claude-code]
 fontes: [atlas, whatsapp, email]
 atualizado: 2026-10-16

@@ -1,7 +1,7 @@
 ---
 titulo: Guia completo para começar
 resumo: Tutorial do zero à primeira resposta do assistente com os seus dados, no Claude ou no ChatGPT.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Começo
 tempo: 20 min
@@ -38,6 +38,5 @@ Siga as partes na ordem. Tenha o computador ligado na internet e, se for usar o 
 
 ## 5. Próximos passos
 
-- Copie uma pergunta pronta na [biblioteca de prompts](/prompts/).
 - Conecte o [WhatsApp](/tutoriais/conectar-whatsapp/) e o [e-mail](/tutoriais/conectar-email/), se for usar.
-- Instale a skill [Briefing de reunião](/skills/briefing-reuniao/).
+- Veja como [fazer boas perguntas e conferir as respostas](/tutoriais/boas-perguntas/).

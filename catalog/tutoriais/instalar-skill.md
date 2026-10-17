@@ -1,7 +1,7 @@
 ---
 titulo: Instalar uma skill no Claude e no ChatGPT
 resumo: Tutorial para instalar uma skill da central no Claude Desktop, no Claude Code e no Codex, ou usar as instruções no ChatGPT.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, claude-code, chatgpt]
 assunto: Skills
 tempo: 5 min

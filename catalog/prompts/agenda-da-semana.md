@@ -1,7 +1,7 @@
 ---
 titulo: Agenda da semana
 resumo: Lê as reuniões da semana na sua agenda e traz o essencial de cada cliente.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [email, atlas]
 atualizado: 2026-10-16

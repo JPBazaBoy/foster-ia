@@ -1,7 +1,7 @@
 ---
 titulo: Preparar reunião
 resumo: Monta o briefing de um cliente antes da reunião, com carteira, vencimentos, conversas e pendências.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas, whatsapp]
 atualizado: 2026-10-16

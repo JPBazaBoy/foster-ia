@@ -1,7 +1,7 @@
 ---
 titulo: Usar com o Claude Desktop ou com o ChatGPT
 resumo: Tutorial para ligar o FosterMCP ao seu assistente e fazer a pergunta de teste.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Assistentes
 tempo: 4 min

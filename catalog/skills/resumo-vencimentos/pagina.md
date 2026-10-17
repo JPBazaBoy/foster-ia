@@ -1,7 +1,7 @@
 ---
 titulo: Resumo semanal de vencimentos
 resumo: Skill que, toda segunda, lista o que vence na semana e sugere quem contatar primeiro.
-situacao: em-breve
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex]
 fontes: [atlas]
 atualizado: 2026-10-16

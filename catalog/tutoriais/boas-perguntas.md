@@ -1,7 +1,7 @@
 ---
 titulo: Fazer boas perguntas e conferir as respostas
 resumo: Tutorial com o que pedir ao assistente para ter respostas certas sobre os seus dados, e o que conferir antes de usar.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Uso
 tempo: 4 min

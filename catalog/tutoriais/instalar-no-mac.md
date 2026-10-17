@@ -1,7 +1,7 @@
 ---
 titulo: Instalar o FosterMCP no Mac
 resumo: Tutorial de instalação no Mac, com o "Abrir Mesmo Assim" em Ajustes do Sistema.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Instalação
 tempo: 8 min

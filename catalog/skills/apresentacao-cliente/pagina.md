@@ -1,7 +1,7 @@
 ---
 titulo: Apresentação para cliente
 resumo: Skill que gera uma apresentação no padrão Foster com a carteira, os vencimentos e os próximos passos do cliente.
-situacao: em-teste
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, claude-code]
 fontes: [atlas, whatsapp, email]
 atualizado: 2026-10-16

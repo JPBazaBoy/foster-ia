@@ -1,7 +1,7 @@
 ---
 titulo: Carteira do cliente
 resumo: Mostra a carteira de um cliente por classe de ativo, com o percentual de cada uma e os maiores ativos.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas]
 atualizado: 2026-10-16

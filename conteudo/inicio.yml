@@ -1,7 +1,7 @@
 # Textos da página inicial. Dá para usar **negrito** e [links](/catalogo/) nos passos.
 titulo: Ferramentas de IA para o dia a dia do assessor
 texto: Aplicativos, skills, modelos de agentes e prompts para usar com o Claude, o ChatGPT e outros assistentes. Cada item explica o que faz, mostra exemplos e traz o passo a passo para instalar.
-busca: "Buscar: vencimentos, apresentação, WhatsApp…"
+busca: "Buscar: instalar, Atlas, WhatsApp…"
 primeiraVez:
   titulo: Primeira vez aqui? Siga esta ordem
   passos:

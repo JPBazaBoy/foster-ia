@@ -1,7 +1,7 @@
 ---
 titulo: Escolher conversas e conectar o WhatsApp
 resumo: Tutorial para escolher os contatos, conectar o celular e manter o WhatsApp atualizado.
-situacao: disponivel
+situacao: em-revisao
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: WhatsApp
 tempo: 7 min

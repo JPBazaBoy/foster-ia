@@ -1,4 +1,4 @@
 ---
-resumo: Passo a passo com imagens de cada tela.
+resumo: Passo a passo para instalar, conectar e usar cada ferramenta.
 vazio: Em breve. Os primeiros tutoriais estão sendo preparados.
 ---

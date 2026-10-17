@@ -1,7 +1,7 @@
 ---
 titulo: Aportes e resgates do mês
 resumo: Separa os aportes e os resgates do mês, do maior para o menor.
-situacao: disponivel
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas]
 atualizado: 2026-10-16

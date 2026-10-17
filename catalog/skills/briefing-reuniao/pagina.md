@@ -1,7 +1,7 @@
 ---
 titulo: Briefing de reunião
 resumo: Skill que resume a situação do cliente em uma página, com carteira, vencimentos, últimas conversas e pendências.
-situacao: em-teste
+situacao: rascunho
 plataformas: [claude-desktop, chatgpt-codex, claude-code]
 fontes: [atlas, whatsapp, email]
 atualizado: 2026-10-16
