@@ -14,8 +14,11 @@ Exemplos de pedidos:
 
 - "Adicione este prompt: *Quais clientes têm aniversário este mês?* Ele usa o Atlas."
 - "Crie um tutorial explicando como conectar o e-mail no FosterMCP, no mesmo formato dos outros."
-- "Marque a skill Briefing de reunião como defasada e indique a skill Apresentação para cliente no lugar."
-- "Arquive o prompt Agenda da semana."
+- "Publique o prompt [nome] como em teste." (tira do rascunho)
+- "Tire a skill [nome] do site e deixe como rascunho."
+- "Os prints do tutorial Conectar o Atlas entraram: tire o Em revisão."
+- "Marque o tutorial [nome] como defasado e indique [outro item] no lugar."
+- "Arquive o prompt [nome]."
 - "Coloque revisão para daqui a 3 meses em todos os tutoriais de instalação."
 - "Troque o texto do resumo do FosterMCP por: …"
 - "Use esta imagem como print da tela do Atlas" (anexe a imagem).
@@ -43,6 +46,8 @@ Você precisa ser colaborador do repositório. Se não for, peça ao responsáve
 3. Volte para a pasta e clique em **Add file › Create new file**.
 4. Dê o nome do arquivo: **letras minúsculas sem acento, números e hífens**, terminando em `.md`. Por exemplo, `aniversarios-do-mes.md`. O nome vira o endereço da página.
 5. Cole o modelo, troque os textos e confirme como no passo 5 acima.
+
+Enquanto o item não estiver pronto para aparecer, troque `situacao: em-teste` por `situacao: rascunho`. Ele fica guardado no repositório e não entra no site. Quando estiver pronto, volte para `em-teste`.
 
 Skills e agentes são pastas, não um arquivo só: crie `catalog/skills/nome-da-skill/pagina.md` e `catalog/skills/nome-da-skill/SKILL.md` (no campo do nome, a barra `/` cria a pasta). Se achar trabalhoso, use o caminho 1.
 
@@ -90,11 +95,19 @@ O campo `situacao`, no cabeçalho de cada arquivo, diz em que fase o item está:
 
 | Situação | Quando usar | O que aparece no site |
 | --- | --- | --- |
+| `rascunho` | Em preparação; ainda não deve aparecer | Nada. O item fica só no repositório: sem página, fora das listas, da busca e da página inicial |
+| `em-breve` | Ainda não existe; a página mostra o que vai fazer | Selo "Em breve", sem download |
 | `em-teste` | Item novo, ainda sendo validado | Selo "Em teste" e um aviso para conferir antes de usar com clientes |
 | `disponivel` | Validado | Selo "Disponível" (em apps, skills e agentes) |
-| `em-breve` | Ainda não existe; a página mostra o que vai fazer | Selo "Em breve", sem download |
+| `em-revisao` | Está sendo conferido e pode mudar, como um tutorial à espera dos prints | Selo "Em revisão" e um aviso no topo da página |
 | `defasado` | Pode não valer mais e não está sendo atualizado | Selo e aviso "Defasado". Com `substituido_por`, o aviso indica o item que vale no lugar |
 | `arquivado` | Saiu de uso | Some das listas e da busca. A página continua no ar, com aviso, para quem tiver o link |
+
+Sobre o rascunho:
+
+- O sistema só confere o cabeçalho de um rascunho. O texto pode estar pela metade; a conferência completa acontece quando você muda a situação.
+- Como o rascunho não tem página, nenhum item publicado pode ter link para ele. Se tiver, o sistema avisa o arquivo e o link.
+- Se um tipo ficar sem nenhum item publicado (por exemplo, nenhuma skill), a página dele e a página inicial mostram a frase `vazio` de `conteudo/tipos/`, como "Em breve. As primeiras skills estão sendo preparadas.".
 
 Mais dois campos ajudam a manter tudo em dia:
 
@@ -105,7 +118,7 @@ Exemplo de cabeçalho de um item defasado:
 
 ```yaml
 situacao: defasado
-substituido_por: skills/apresentacao-cliente
+substituido_por: tutoriais/primeiros-passos
 atualizado: 2026-11-03
 ```
 
@@ -126,10 +139,11 @@ atualizado: 2026-11-03
 | --- | --- |
 | Apps, conectores, skills, agentes, prompts e tutoriais | `catalog/<tipo>/`, cada pasta com um `_modelo` para copiar |
 | Novidades da página inicial | `conteudo/novidades.yml` |
+| Frase de cada categoria e a de "em breve", quando ela está vazia | `conteudo/tipos/` |
 | Textos da página inicial e o quadro "Primeira vez aqui?" | `conteudo/inicio.yml` |
 | Página de Ajuda | `conteudo/paginas/ajuda.md` |
 | Trechos que se repetem em várias páginas | `conteudo/trechos/` |
 | Prints | `public/imagens/` |
-| Nome, cores, contato, aviso e a chave da prévia | `config.js` (combine com o responsável antes de mexer) |
+| Nome, cores, contato, aviso e as chaves da prévia e dos downloads | `config.js` (combine com o responsável antes de mexer) |
 
 Detalhes de todos os campos, seções, abas e blocos visuais estão no [AGENTS.md](AGENTS.md).

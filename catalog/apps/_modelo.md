@@ -3,7 +3,7 @@
 # FosterMCP (download: fostermcp); outro app com download próprio pede um ajuste pequeno no gerador.
 titulo: Nome do app
 resumo: Aplicativo que [faz o quê]. A primeira frase diz o que ele é.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt-codex]
 compatibilidade: Windows 10 e 11 · gratuito
 usos:

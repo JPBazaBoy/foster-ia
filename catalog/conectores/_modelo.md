@@ -2,7 +2,7 @@
 # Modelo de conector (MCP). Copie, renomeie e preencha. Aparece em Apps e conectores.
 titulo: Nome do conector
 resumo: Conector que dá ao assistente acesso a [fonte]. A primeira frase diz o que ele é.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 atualizado: 2026-10-16
 # revisar_ate: 2027-04-16 (opcional: depois desta data o item mostra "Pode estar desatualizado")

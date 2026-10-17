@@ -41,6 +41,10 @@ Três chaves de [`config.js`](config.js), independentes:
 - `downloads: true` liga os botões de download do FosterMCP (página do app e cartão da Início), com versão, data e tamanho tirados do `version.json`. Os botões levam a `https://github.com/JPBazaBoy/foster-ia/releases/latest/download/<nome fixo>`, que sempre entrega o instalador da última release. Com `downloads: false`, aparece "Download liberado após a validação" e nenhum link leva a um instalador.
 - `indexar: false`, fora da prévia, continua pedindo aos buscadores que não listem o site.
 
+## Rascunhos
+
+Itens com `situacao: rascunho` ficam só no repositório: o gerador confere o cabeçalho e para por aí. Eles não viram página nem arquivo para baixar e ficam fora das listas, da busca e da Início (o site não tem sitemap). Se um texto publicado tiver link para um rascunho, ou apontá-lo em `substituido_por` ou `requer`, o build para e diz o arquivo e o link. Um tipo sem nenhum item publicado mostra a frase `vazio` de `conteudo/tipos/<area>.md`.
+
 ## O version.json do FosterMCP
 
 O app avisa de versões novas lendo um `version.json`. O endereço que vai no app é o do arquivo bruto no repositório, que não muda se o site trocar de domínio:
@@ -70,7 +74,7 @@ https://raw.githubusercontent.com/JPBazaBoy/foster-ia/main/public/fostermcp/vers
 
 ### Sair da prévia (lançamento)
 
-Só com a aprovação do responsável pela central, depois de revisar textos provisórios em `config.js`, itens `em-teste`, prints, licenças do instalador e ausência de dados pessoais:
+Só com a aprovação do responsável pela central, depois de revisar textos provisórios em `config.js`, itens `em-teste` e `em-revisao`, prints, licenças do instalador e ausência de dados pessoais:
 
 1. Publique a versão do FosterMCP e ligue `downloads` (passos acima), se ainda não estiverem.
 2. Troque `previa: true` por `previa: false` em `config.js`, rode `npm test` e envie para a `main`.
@@ -81,7 +85,7 @@ Só com a aprovação do responsável pela central, depois de revisar textos pro
 | --- | --- |
 | `config.js` | Nome, assinatura, cores, endereços, contato, aviso e as chaves `previa`, `downloads` e `indexar`. Único lugar para essas coisas. |
 | `catalog/` | Os itens, uma pasta por tipo: `apps`, `conectores`, `skills`, `agentes`, `prompts`, `tutoriais`. Cada pasta tem um `_modelo` para copiar. |
-| `conteudo/` | Página inicial (`inicio.yml`), novidades (`novidades.yml`), frase de cada categoria (`tipos/`), páginas avulsas como a Ajuda (`paginas/`) e trechos repetidos (`trechos/`). |
+| `conteudo/` | Página inicial (`inicio.yml`), novidades (`novidades.yml`), frase de cada categoria e a de lista vazia (`tipos/`), páginas avulsas como a Ajuda (`paginas/`) e trechos repetidos (`trechos/`). |
 | `public/` | Arquivos copiados como estão: prints em `public/imagens/` e o `fostermcp/version.json`. |
 | `assets/` | Estilo (CSS) e comportamento (JS). As fontes Manrope e Cormorant Garamond vêm do npm (licença OFL) e são servidas pelo próprio site. |
 | `generator/` | O gerador do site (Node, sem framework). |

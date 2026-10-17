@@ -5,7 +5,7 @@ Este repositório é a Central de IA dos assessores: um site estático gerado a 
 ## Como trabalhar
 
 1. Leia o pedido e localize os arquivos: itens em `catalog/<tipo>/`, textos gerais em `conteudo/`, prints em `public/imagens/`.
-2. Para criar um item, **copie o `_modelo` do tipo** e preencha. Não invente campos nem seções.
+2. Para criar um item, **copie o `_modelo` do tipo** e preencha. Não invente campos nem seções. Se a pessoa ainda não quer o item no site, use `situacao: rascunho`.
 3. Rode `npm test` (e `npm ci` antes, na primeira vez). Corrija tudo o que ele apontar; as mensagens dizem o arquivo e o que mudar.
 4. Se quiser ver a página, `npm run dev` e <http://localhost:8080/foster-ia/>.
 5. Mostre a quem pediu um resumo curto do que mudou. Faça commit com mensagem em português ("Prompts: aniversários do mês") e envie para a `main` só quando a pessoa pedir; se ela preferir revisão, abra um pull request.
@@ -13,11 +13,11 @@ Este repositório é a Central de IA dos assessores: um site estático gerado a 
 ## Regras que não mudam
 
 - **Repositório público.** Nunca grave dado real de cliente, nome de pessoa, telefone, e-mail, número de conta, patrimônio real, senha ou token, nem em prints, exemplos ou mensagens de commit. Exemplos usam dados fictícios, marcados como fictícios, com clientes de código 900001, 900014 etc.
-- **Honestidade de plataforma.** `plataformas` lista só onde o item funciona hoje. Gemini e Grok entram apenas em `plataformas_em_breve` (aparecem como "em breve"). Itens para GrokBot e Hermes Agent são `situacao: em-breve` e `avancado: true`. A integração com o WhatsApp não é oficial: não diga o contrário.
+- **Honestidade de plataforma.** `plataformas` lista só onde o item funciona hoje. Gemini e Grok entram apenas em `plataformas_em_breve` (aparecem como "em breve"). Itens para GrokBot e Hermes Agent levam `avancado: true` e, enquanto não funcionarem, ficam em `rascunho` ou `em-breve`. A integração com o WhatsApp não é oficial: não diga o contrário.
 - **FosterMCP só chega ao ChatGPT pela aba Codex** (`chatgpt-codex`). `chatgpt` (Projetos e GPTs) serve para instruções coladas, nunca para consultar dados do FosterMCP.
 - **Prévia e downloads.** Não troque `previa`, `downloads` nem `indexar` em `config.js`, não crie releases e não publique instaladores sem pedido explícito do responsável pela central. `previa` liga a faixa "Prévia em teste" e o pedido para os buscadores não listarem o site; `downloads` liga, à parte, os botões de download do FosterMCP e exige o `version.json`.
 - **Endereços fixos.** Não mude `repositorio`, `endereco` nem `fostermcp.feed`/`fostermcp.arquivos` em `config.js`: o app FosterMCP lê `public/fostermcp/version.json` pelo endereço raw do repositório. Esse arquivo só é gerado por `npm run release`; não edite à mão.
-- **Não apague itens.** Para tirar de uso, arquive (`situacao: arquivado`). Os links antigos continuam funcionando.
+- **Não apague itens.** Para tirar de uso, arquive (`situacao: arquivado`). Os links antigos continuam funcionando. Para tirar do site algo que ainda não está pronto, use `situacao: rascunho`.
 - **Gerador.** Mudanças em `generator/`, `assets/` e `test/` só quando o pedido for técnico. Pedidos de conteúdo se resolvem em `catalog/`, `conteudo/` e `public/`.
 
 ## Regras de texto
@@ -43,6 +43,7 @@ Este repositório é a Central de IA dos assessores: um site estático gerado a 
 - O nome do arquivo ou da pasta usa **letras minúsculas sem acento, números e hífens** e vira o endereço: `catalog/prompts/aniversarios-do-mes.md` → `/prompts/aniversarios-do-mes/`. A referência a um item é `pasta/nome`, como `prompts/aniversarios-do-mes` ou `apps/fostermcp`.
 - Arquivos e pastas que começam com `_` não entram no site.
 - Itens `em-breve` só precisam da primeira seção, e skills e agentes em breve podem ficar sem `SKILL.md` ou `instrucoes.md`.
+- Em `rascunho` só o cabeçalho é conferido: o conteúdo pode estar pela metade. A conferência completa vale quando a situação muda, então rode `npm test` depois de publicar um rascunho.
 - **Skill:** o `name` do `SKILL.md` é igual ao nome da pasta (sem "claude" nem "anthropic") e a `description` diz o que a skill faz e quando usar, em até 500 caracteres. A pasta, menos `pagina.md`, vira `<nome>.zip` com a pasta na raiz.
 - **Modelo de agente:** `instrucoes.md` tem até 8000 caracteres e vira o `AGENTS.md` para baixar. Agentes autônomos levam `avancado: true`.
 - Seções extras são livres (por exemplo, Atualizar, Privacidade, Perguntas frequentes).
@@ -53,12 +54,12 @@ Este repositório é a Central de IA dos assessores: um site estático gerado a 
 | --- | --- | --- |
 | `titulo` | sim | Até 80 caracteres. |
 | `resumo` | sim | Até 220 caracteres; a primeira frase diz o que o item é. |
-| `situacao` | sim | `disponivel`, `em-teste`, `em-breve`, `defasado` ou `arquivado` (veja abaixo). Item novo começa em `em-teste`. |
+| `situacao` | sim | `rascunho`, `em-breve`, `em-teste`, `disponivel`, `em-revisao`, `defasado` ou `arquivado` (veja abaixo). Item novo começa em `em-teste`, ou em `rascunho` se ainda não deve aparecer. |
 | `plataformas` | sim | Lista com `claude-desktop`, `chatgpt-codex`, `chatgpt`, `cursor`, `claude-code`, `grokbot`, `hermes` (e `gemini`, `grok` só em `plataformas_em_breve`). Em itens em breve, são as previstas. |
 | `atualizado` | sim | `AAAA-MM-DD` da última revisão. Atualize sempre que mexer no conteúdo. |
 | `plataformas_em_breve` | não | Plataformas que ainda não funcionam, como `[gemini, grok]`. Não pode repetir as de `plataformas`. |
 | `revisar_ate` | não | `AAAA-MM-DD`. Depois dessa data o item mostra sozinho "Pode estar desatualizado". |
-| `substituido_por` | não | `pasta/nome` do item que vale no lugar. Só com `defasado` ou `arquivado`; não pode apontar para item arquivado nem para si mesmo. |
+| `substituido_por` | não | `pasta/nome` do item que vale no lugar. Só com `defasado` ou `arquivado`; não pode apontar para item arquivado, em rascunho nem para si mesmo. |
 | `avancado` | não | `true` para itens que exigem configuração técnica (selo e aviso "Avançado"). |
 | `destaque` | não | `true` coloca o item na página inicial. |
 | `versao` | não | Entre aspas: `"1.0"`. |
@@ -78,11 +79,15 @@ Valores com vírgula ou dois-pontos vão entre aspas: `texto: "R$ 2,48 mi"`.
 
 | `situacao` | Nas listas e na busca | Na página |
 | --- | --- | --- |
+| `rascunho` | **Não** | **Não existe**: fica só no repositório, sem página, sem arquivo para baixar e fora da Início |
+| `em-breve` | Sim, com selo "Em breve" | Aviso; sem download nem instruções para copiar |
 | `em-teste` | Sim, com selo "Em teste" | Aviso para conferir antes de usar com clientes |
 | `disponivel` | Sim ("Disponível" só em apps, skills e agentes) | — |
-| `em-breve` | Sim, com selo "Em breve" | Aviso; sem download nem instruções para copiar |
+| `em-revisao` | Sim, com selo "Em revisão" | Aviso de que o material está sendo conferido e pode mudar |
 | `defasado` | Sim, com selo "Defasado" | Aviso "Defasado" e, com `substituido_por`, o link "Use no lugar" |
 | `arquivado` | **Não** | Continua no ar com aviso "Arquivado" e o link do substituto, se houver |
+
+Um rascunho não tem página: nenhum texto publicado pode levar a ele (links, `substituido_por`, `requer`, novidades). O `npm test` aponta o arquivo e o link. Quando um tipo fica sem nenhum item publicado, a lista e a Início mostram a frase `vazio` de `conteudo/tipos/<area>.md`.
 
 Pedidos comuns:
 
@@ -90,6 +95,9 @@ Pedidos comuns:
 - **"Arquive Y":** `situacao: arquivado` (e `substituido_por`, se houver). Antes, procure outros itens que apontem para Y em `substituido_por` e avise a pessoa.
 - **"Revise Z" ou "marque revisão":** confira o conteúdo, troque `atualizado` para hoje e, se pedirem prazo, `revisar_ate`.
 - **"Volte Y":** `situacao: disponivel` (ou `em-teste`) e remova `substituido_por`.
+- **"Tire X do site" ou "deixe X como rascunho":** `situacao: rascunho`. Antes, procure links, `substituido_por` e `requer` que apontem para X e avise a pessoa; o `npm test` também acusa.
+- **"Publique X":** de `rascunho` para `em-teste` (ou a situação que a pessoa disser), `atualizado` com a data de hoje. Rode `npm test` e corrija o conteúdo que ele apontar.
+- **"Marque X como em revisão":** `situacao: em-revisao`. Quando a revisão terminar, volte para `disponivel` e troque `atualizado` para hoje.
 
 ## Seções, abas e blocos
 
@@ -120,6 +128,6 @@ Os cartões da página inicial usam o primeiro `exemplos` com `linhas` e o prime
 
 - `conteudo/novidades.yml`: lista com `data` (`AAAA-MM-DD`), `texto` (até 300 caracteres) e `link` opcional começando com `/`. A mais nova aparece primeiro.
 - `conteudo/inicio.yml`: título, texto e o quadro "Primeira vez aqui?" com exatamente 3 passos (`texto` e `tempo`).
-- `conteudo/tipos/<area>.md`: a frase de cada categoria (`resumo`) e um texto opcional.
+- `conteudo/tipos/<area>.md`: a frase de cada categoria (`resumo`), a frase de quando não há item publicado (`vazio`, como "Em breve. As primeiras skills estão sendo preparadas.") e um texto opcional.
 - `conteudo/paginas/`: páginas avulsas, como a Ajuda.
 - `config.js`: nome, assinatura, cores, endereços, contato, aviso e as chaves `previa`, `downloads` e `indexar`. Só mexa com pedido explícito.

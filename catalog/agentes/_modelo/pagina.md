@@ -2,7 +2,7 @@
 # Página do modelo de agente. As instruções ficam em instrucoes.md (até 8000 caracteres) e viram o AGENTS.md.
 titulo: Nome do agente
 resumo: Modelo de agente que [faz o quê]. A primeira frase diz o que ele é.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt, chatgpt-codex, claude-code]
 atualizado: 2026-10-16
 # revisar_ate: 2027-04-16 (opcional: depois desta data o item mostra "Pode estar desatualizado")

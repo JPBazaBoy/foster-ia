@@ -41,11 +41,15 @@ export const SOURCES = {
   whatsapp: {label: 'WhatsApp', aliases: []},
   email: {label: 'E-mail', aliases: ['e-mail e agenda', 'email e agenda', 'agenda']},
 };
-// Ciclo de vida: defasado continua nas listas com aviso; arquivado sai das listas e da busca, mas a página continua no ar.
+// Ciclo de vida, na ordem em que um item costuma passar. rascunho fica só no repositório: sem página, listas nem
+// busca. em-revisao continua visível, com selo. defasado continua nas listas com aviso; arquivado sai das listas
+// e da busca, mas a página continua no ar.
 export const STATUS = {
-  disponivel: {label: 'Disponível'},
-  'em-teste': {label: 'Em teste'},
+  rascunho: {label: 'Rascunho'},
   'em-breve': {label: 'Em breve'},
+  'em-teste': {label: 'Em teste'},
+  disponivel: {label: 'Disponível'},
+  'em-revisao': {label: 'Em revisão'},
   defasado: {label: 'Defasado'},
   arquivado: {label: 'Arquivado'},
 };

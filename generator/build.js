@@ -85,9 +85,10 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), dev = 
     await writeFile(join(out, path), content);
   }
   const unique = [...new Map(pendingImages.map(image => [image.path, image])).values()];
+  const withStatus = status => site.items.filter(item => item.meta.situacao === status).map(item => item.id);
   return {out, pages: [...files.keys()].filter(path => path.endsWith('.html')).length, pendingImages: unique, feed: site.feed,
-    testing: site.items.filter(item => item.meta.situacao === 'em-teste').map(item => item.id),
-    soon: site.items.filter(item => item.meta.situacao === 'em-breve').map(item => item.id), config: site.config};
+    testing: withStatus('em-teste'), reviewing: withStatus('em-revisao'), soon: withStatus('em-breve'),
+    drafts: site.drafts.map(item => item.id), config: site.config};
 }
 
 export function report(result, log = console.log) {
@@ -96,7 +97,9 @@ export function report(result, log = console.log) {
   if (result.config.downloads) log(`FosterMCP ${result.feed.version}: downloads ligados.`);
   else log(`Downloads do FosterMCP desligados${result.feed ? '' : ' (ainda sem public/fostermcp/version.json)'}. Para ligar, troque downloads para true em config.js.`);
   if (result.testing.length) log(`Em teste: ${result.testing.join(', ')}.`);
+  if (result.reviewing.length) log(`Em revisão: ${result.reviewing.join(', ')}.`);
   if (result.soon.length) log(`Em breve: ${result.soon.join(', ')}.`);
+  if (result.drafts.length) log(`Rascunhos, fora do site (${result.drafts.length}): ${result.drafts.join(', ')}.`);
   if (result.pendingImages.length) log(`Prints pendentes (${result.pendingImages.length}):\n${result.pendingImages.map(image => `  - public/${image.path}: ${image.alt}`).join('\n')}`);
 }
 

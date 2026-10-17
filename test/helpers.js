@@ -29,15 +29,17 @@ export function siteCopy(files = {}, settings = {}) {
 }
 export const cleanCopies = () => { for (const root of copies.splice(0)) rmSync(root, {recursive: true, force: true}); };
 
-export function htmlFiles(dir, prefix = '') {
+// Todos os arquivos de uma pasta, com o caminho relativo (por exemplo, skills/nome/index.html).
+export function allFiles(dir, prefix = '') {
   const found = [];
   for (const entry of readdirSync(dir, {withFileTypes: true})) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) found.push(...htmlFiles(join(dir, entry.name), path));
-    else if (entry.name.endsWith('.html')) found.push(path);
+    if (entry.isDirectory()) found.push(...allFiles(join(dir, entry.name), path));
+    else found.push(path);
   }
   return found;
 }
+export const htmlFiles = dir => allFiles(dir).filter(path => path.endsWith('.html'));
 
 // Leitor mínimo de ZIP (diretório central) para conferir o que o gerador escreveu.
 export function readZip(buffer) {

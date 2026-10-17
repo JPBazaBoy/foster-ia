@@ -16,7 +16,8 @@ export function renderSite(site, {imageExists, assets}) {
   const appUrl = config.fostermcp.pagina;
   const newPage = () => { const nextId = createIdSet(); return {nextId, md: createRenderer({base, imageExists, pendingImages, nextId})}; };
   const contact = config.contato.link ? `<a href="${esc(config.contato.link)}">${esc(config.contato.nome)}</a>` : esc(config.contato.nome);
-  // Arquivados saem das listas, da busca e da página inicial; a página deles continua no ar com o aviso.
+  // Rascunhos nem chegam aqui (site.items só tem itens publicados). Arquivados saem das listas, da busca e da página
+  // inicial; a página deles continua no ar com o aviso.
   const listed = site.items.filter(item => item.meta.situacao !== 'arquivado');
   const itemsOf = area => listed.filter(item => AREAS[area].types.includes(item.type));
   // Data de hoje em São Paulo (AAAA-MM-DD), para o selo "Pode estar desatualizado".
@@ -85,7 +86,7 @@ ${body}
 
   // ---------- peças comuns ----------
   const badge = (kind, label) => `<span class="selo selo-${kind}">${label}</span>`;
-  const STATUS_KIND = {disponivel: 'ok', 'em-teste': 'teste', 'em-breve': 'breve', defasado: 'defasado', arquivado: 'arquivado'};
+  const STATUS_KIND = {'em-breve': 'breve', 'em-teste': 'teste', disponivel: 'ok', 'em-revisao': 'revisao', defasado: 'defasado', arquivado: 'arquivado'};
   // Depois de revisar_ate, o selo aparece sozinho: no build, se a data já passou, e no navegador (site.js) nos outros dias.
   const reviewBadge = item => item.meta.revisar_ate ? `<span class="selo selo-revisar" data-revisar-ate="${item.meta.revisar_ate}"${item.meta.revisar_ate < today ? '' : ' hidden'}>Pode estar desatualizado</span>` : '';
   // Tutoriais e prompts disponíveis não precisam de selo: só software (app, skill, agente) mostra "Disponível".
@@ -112,6 +113,8 @@ ${body}
   const downloadOff = '<span class="botao botao-desativado" aria-disabled="true">Download liberado após a validação</span>';
   const copyButton = (target, label, kind = 'botao-linha botao-pequeno') => `<button type="button" class="botao ${kind}" data-copiar="${target}">${label}</button>`;
   const allLink = (area, count) => `<a class="ver-todos" href="${href(`${area}/`)}">${AREAS[area].all}${count ? ` (${count})` : ''} ${icon('arrow')}</a>`;
+  // Tipo sem nenhum item publicado: só a frase de conteudo/tipos/<area>.md (vazio), sem exemplo inventado.
+  const emptyArea = area => `<p class="vazio">${esc(site.intros[area].vazio)}</p>`;
 
   // Exemplo de conversa do cartão de app: o primeiro exemplo com linhas (ou o primeiro de todos).
   function conversation(item) {
@@ -148,7 +151,7 @@ ${body}
   <div><h${level} class="linha-titulo"><a href="${href(item.url)}">${esc(item.meta.titulo)}</a></h${level}><p>${type ? `${TYPES[item.type].label} · ` : ''}${esc(joinNames(families(item), 'ou'))} · ${esc(firstSentence(item.meta.resumo))}</p></div>
   <span class="selos">${badges(item)}</span>
 </li>`;
-  // Prompts e tutoriais disponíveis não mostram selo; defasado, em teste e revisão vencida aparecem na linha.
+  // Prompts e tutoriais disponíveis não mostram selo; em teste, em revisão, defasado e revisão vencida aparecem na linha.
   const promptRow = (item, id, {title = false} = {}) => `<li class="linha-prompt"${filterData(item)}>
   <div class="linha-prompt-texto">${title || badges(item) ? `<div class="linha-topo">${title ? `<a class="linha-prompt-titulo" href="${href(item.url)}">${esc(item.meta.titulo)}</a>` : ''}${badges(item)}</div>` : ''}<q id="${id}">${esc(item.prompt)}</q></div>
   <span class="fonte-tag">${esc(sourceNames(item))}</span>
@@ -170,7 +173,14 @@ ${body}
     const {home} = site, ctx = newPage();
     // Destaques primeiro; se faltar, completa com os demais na ordem do catálogo.
     const pick = (area, count) => { const list = itemsOf(area); return [...list.filter(item => item.meta.destaque), ...list.filter(item => !item.meta.destaque)].slice(0, count); };
-    const head = (area, count) => `<div class="categoria-topo"><h2 id="${area}">${AREAS[area].title}</h2>${allLink(area, count)}</div><p class="categoria-desc">${esc(site.intros[area].resumo)}</p>`;
+    // Cada seção mostra os itens escolhidos ou, sem nenhum publicado, a frase de "em breve" do tipo (sem "Ver todos").
+    const category = (area, count, render, {total = false} = {}) => {
+      const list = pick(area, count);
+      return `<section class="categoria" aria-labelledby="${area}"><div class="categoria-topo"><h2 id="${area}">${AREAS[area].title}</h2>${list.length ? allLink(area, total ? itemsOf(area).length : 0) : ''}</div>` +
+        `<p class="categoria-desc">${esc(site.intros[area].resumo)}</p>${list.length ? render(list) : emptyArea(area)}</section>`;
+    };
+    // O guia do quadro "Primeira vez aqui?" mostra a situação dele (por exemplo, Em revisão), como nas listas.
+    const guide = site.items.find(item => `/${item.url}` === home.primeiraVez.link.split('#')[0]);
     const html = `<div class="container">
 <section class="intro">
   <div>
@@ -184,18 +194,18 @@ ${body}
   <aside class="primeira-vez" aria-labelledby="primeira-vez">
     <h2 id="primeira-vez">${esc(home.primeiraVez.titulo)}</h2>
     <ol>${home.primeiraVez.passos.map(step => `<li><span>${ctx.md.inline(step.texto)}</span><span class="tempo">${esc(step.tempo)}</span></li>`).join('')}</ol>
-    <a class="botao botao-escuro botao-pequeno" href="${href(home.primeiraVez.link)}">${esc(home.primeiraVez.botao)}</a>
+    <p class="primeira-vez-acao"><a class="botao botao-escuro botao-pequeno" href="${href(home.primeiraVez.link)}">${esc(home.primeiraVez.botao)}</a>${guide ? badges(guide) : ''}</p>
   </aside>
 </section>
-<section class="categoria" aria-labelledby="apps">${head('apps', 0)}${pick('apps', 2).map(item => appCard(item, 3)).join('\n')}</section>
-<section class="categoria" aria-labelledby="skills">${head('skills', 0)}${listFor('skills', pick('skills', 3), 3)}</section>
+${category('apps', 2, list => list.map(item => appCard(item, 3)).join('\n'))}
+${category('skills', 3, list => listFor('skills', list, 3))}
 <div class="duas-colunas">
-  <section class="categoria" aria-labelledby="agentes">${head('agentes', 0)}${listFor('agentes', pick('agentes', 3), 3)}</section>
+  ${category('agentes', 3, list => listFor('agentes', list, 3))}
   <section class="categoria" aria-labelledby="novidades"><div class="categoria-topo"><h2 id="novidades">Novidades</h2></div><p class="categoria-desc">O que mudou recentemente.</p>
     <ul class="novidades">${site.news.slice(0, 4).map(entry => `<li><time datetime="${entry.data}">${formatDay(entry.data)}</time>${entry.link ? `<a href="${href(entry.link)}">${ctx.md.inline(entry.texto)}</a>` : ctx.md.inline(entry.texto)}</li>`).join('')}</ul></section>
 </div>
-<section class="categoria" aria-labelledby="prompts">${head('prompts', itemsOf('prompts').length)}${listFor('prompts', pick('prompts', 4), 3)}</section>
-<section class="categoria" aria-labelledby="tutoriais">${head('tutoriais', 0)}${listFor('tutoriais', pick('tutoriais', 5), 3)}</section>
+${category('prompts', 4, list => listFor('prompts', list, 3), {total: true})}
+${category('tutoriais', 5, list => listFor('tutoriais', list, 3))}
 </div>`;
     files.set('index.html', layout({title: null, description: config.descricao, current: 'inicio', body: html, path: ''}));
   }
@@ -215,23 +225,26 @@ ${body}
   // ---------- páginas de categoria ----------
   function renderArea(area) {
     const ctx = newPage(), items = itemsOf(area), intro = site.intros[area];
+    const nextConnectors = '<div class="proximos"><p><strong>Próximos conectores.</strong> Gemini e Grok só aceitam conectores pela internet, que o FosterMCP ainda não tem. Quando houver um novo conector testado, ele aparece aqui.</p></div>';
     let content;
-    if (area === 'apps') {
+    // Sem item publicado, a página mostra só a frase de "em breve": sem filtros, contagem nem lista.
+    if (!items.length) content = `${emptyArea(area)}${area === 'apps' ? nextConnectors : ''}`;
+    else if (area === 'apps') {
       const apps = items.filter(item => item.type === 'app'), connectors = items.filter(item => item.type === 'conector');
       content = `${filters('filtro-apps', {field: 'plataformas', legend: 'Funciona com', options: platformOptions(items)})}
 <div class="pilha" data-lista>${apps.map(item => appCard(item, 2)).join('\n')}</div>
 ${connectors.length ? `<h2 class="subtitulo-lista">Conectores</h2><ul class="lista" data-lista>${connectors.map(item => row(item, 3)).join('\n')}</ul>` : ''}
-<div class="proximos"><p><strong>Próximos conectores.</strong> Gemini e Grok só aceitam conectores pela internet, que o FosterMCP ainda não tem. Quando houver um novo conector testado, ele aparece aqui.</p></div>`;
+${nextConnectors}`;
     } else if (area === 'prompts') content = `${filters('filtro-prompts', {field: 'fontes', legend: 'Fonte', options: [['', 'Todas'], ...Object.entries(SOURCES).map(([key, {label}]) => [key, label])]})}${listFor(area, items, 2)}`;
     else if (area === 'tutoriais') {
       const subjects = [...new Set(items.map(item => item.meta.assunto))];
       content = `${filters('filtro-tutoriais', {field: 'assunto', legend: 'Assunto', options: [['', 'Todos'], ...subjects.map(subject => [normalize(subject), subject])]})}${listFor(area, items, 2)}`;
-    } else content = `${filters(`filtro-${area}`, {field: 'plataformas', legend: 'Funciona com', options: platformOptions(items)})}${items.length ? listFor(area, items, 2) : '<p class="vazio">Ainda não há itens aqui.</p>'}`;
+    } else content = `${filters(`filtro-${area}`, {field: 'plataformas', legend: 'Funciona com', options: platformOptions(items)})}${listFor(area, items, 2)}`;
     const html = `<div class="container pagina">
   <nav class="trilha" aria-label="Você está em"><ol><li><a href="${href('')}">Início</a></li><li><span aria-current="page">${AREAS[area].title}</span></li></ol></nav>
   <header class="pagina-topo"><h1>${AREAS[area].title}</h1><p class="lead">${esc(intro.resumo)}</p>${intro.body.trim() ? `<div class="texto pagina-intro">${ctx.md.source(intro.body)}</div>` : ''}</header>
   ${content}
-  ${emptyState}
+  ${items.length ? emptyState : ''}
 </div>`;
     files.set(`${area}/index.html`, layout({title: AREAS[area].title, description: intro.resumo, current: area, body: html, path: `${area}/`}));
   }
@@ -242,7 +255,7 @@ ${connectors.length ? `<h2 class="subtitulo-lista">Conectores</h2><ul class="lis
     const radios = options.map(([value, label], i) => `<label class="filtro"><input type="radio" name="area" value="${value}"${i === 0 ? ' checked' : ''}><span>${esc(label)}</span></label>`).join('');
     const html = `<div class="container pagina">
   <nav class="trilha" aria-label="Você está em"><ol><li><a href="${href('')}">Início</a></li><li><span aria-current="page">Buscar</span></li></ol></nav>
-  <header class="pagina-topo"><h1>Buscar na central</h1><p class="lead">Digite uma palavra, como vencimentos, apresentação ou WhatsApp.</p></header>
+  <header class="pagina-topo"><h1>Buscar na central</h1><p class="lead">Digite uma palavra, como instalar, Atlas ou WhatsApp.</p></header>
   <form class="filtros" data-filtros hidden>
     <div class="filtros-busca">${icon('search')}<label class="visualmente-oculto" for="busca">Buscar</label><input id="busca" name="q" type="search" placeholder="Buscar na central" autocomplete="off"></div>
     <fieldset><legend>Onde procurar</legend><div class="filtro-grupo">${radios}</div></fieldset>
@@ -329,6 +342,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
   const NOTICES = {
     'em-teste': 'Em teste: ainda está sendo validado no piloto. Confira os resultados antes de usar com clientes.',
     'em-breve': 'Em breve: ainda não está disponível. Esta página mostra o que ele vai fazer e o que será preciso.',
+    'em-revisao': 'Em revisão: este material está sendo conferido e pode mudar.',
     defasado: 'Defasado: este material pode não valer mais e não está sendo atualizado.',
     arquivado: 'Arquivado: este material saiu das listas e não é mais mantido. A página continua aqui para consulta.',
   };

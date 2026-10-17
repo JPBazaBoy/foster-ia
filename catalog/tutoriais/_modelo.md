@@ -2,7 +2,7 @@
 # Modelo de tutorial. Copie, renomeie (por exemplo, meu-tutorial.md) e escreva em Markdown.
 titulo: Nome do tutorial
 resumo: Uma frase dizendo o que a pessoa vai conseguir fazer.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 assunto: Assunto curto
 tempo: 5 min

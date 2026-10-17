@@ -3,7 +3,7 @@
 # por exemplo meu-prompt.md) e preencha. Arquivos que começam com _ não entram no site.
 titulo: Nome curto do prompt
 resumo: Uma frase dizendo o que o prompt faz.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt-codex, cursor, claude-code]
 fontes: [atlas]
 atualizado: 2026-10-16

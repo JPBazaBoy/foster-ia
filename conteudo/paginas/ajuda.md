@@ -16,7 +16,7 @@ Por enquanto, as dúvidas vão para {{site.contato}}. O canal definitivo ainda s
 ## Avisos
 
 - {{site.aviso}}
-- Itens **Em teste** ainda estão sendo validados no piloto: confira os resultados antes de usar com clientes. Itens **Em breve** ainda não funcionam.
+- Itens **Em teste** ainda estão sendo validados no piloto: confira os resultados antes de usar com clientes. Itens **Em revisão** estão sendo conferidos e podem mudar. Itens **Em breve** ainda não funcionam.
 - Itens **Defasados** podem não valer mais; o aviso no topo indica o que usar no lugar. O selo **Pode estar desatualizado** aparece quando a revisão marcada para o item já passou.
 - Os instaladores do FosterMCP ainda não têm assinatura digital, que é paga. Por isso o Windows e o Mac mostram um aviso na primeira vez; o passo a passo está na [página do FosterMCP](/apps/fostermcp/#instalacao).
 

@@ -9,7 +9,9 @@ import {siteCopy, cleanCopies} from './helpers.js';
 
 after(cleanCopies);
 const site = await loadSite(SITE_ROOT);
-const byId = id => site.items.find(item => item.id === id);
+// items: publicados; drafts: rascunhos, que ficam fora do site.
+const all = [...site.items, ...site.drafts];
+const byId = id => all.find(item => item.id === id);
 const problemsIn = async files => (await loadSite(siteCopy(files))).problems.map(problem => `${problem.file}: ${problem.message}`);
 const PROMPT = `---
 titulo: Teste
@@ -31,35 +33,52 @@ Em testes.
 
 test('o catálogo real está válido: cabeçalhos, seções, abas, blocos, skills, agentes e referências', () => {
   assert.deepEqual(site.problems, []);
-  for (const type of ['app', 'skill', 'agente', 'prompt', 'tutorial']) assert.ok(site.items.some(item => item.type === type), `há ao menos um item do tipo ${type}`);
-  assert.equal(site.items.filter(item => item.type === 'prompt').length, 10);
-  assert.ok(site.items.every(item => item.meta.plataformas.every(platform => Object.hasOwn(PLATFORMS, platform))));
+  for (const type of ['app', 'skill', 'agente', 'prompt', 'tutorial']) assert.ok(all.some(item => item.type === type), `há ao menos um item do tipo ${type}`);
+  // Itens não são apagados (arquivam-se): a conta só cresce.
+  assert.ok(all.filter(item => item.type === 'prompt').length >= 10, 'algum prompt foi apagado');
+  assert.ok(all.every(item => item.meta.plataformas.every(platform => Object.hasOwn(PLATFORMS, platform))));
 });
 
 test('honestidade de plataforma: Gemini e Grok só aparecem como "em breve"', () => {
   const app = byId('apps/fostermcp');
   assert.deepEqual(app.meta.plataformas, ['claude-desktop', 'chatgpt-codex', 'cursor', 'claude-code']);
   assert.deepEqual(app.meta.plataformas_em_breve, ['gemini', 'grok']);
-  for (const item of site.items) assert.ok(!item.meta.plataformas.some(platform => ['gemini', 'grok'].includes(platform)), item.id);
+  // Vale também para os rascunhos: o cabeçalho deles é conferido e um dia eles saem do rascunho.
+  for (const item of all) assert.ok(!item.meta.plataformas.some(platform => ['gemini', 'grok'].includes(platform)), item.id);
   // Itens que dependem do FosterMCP não oferecem Projetos e GPTs do ChatGPT como lugar para consultar dados.
-  for (const item of site.items.filter(candidate => candidate.type === 'prompt')) assert.ok(!item.meta.plataformas.includes('chatgpt'), item.id);
+  for (const item of all.filter(candidate => candidate.type === 'prompt')) assert.ok(!item.meta.plataformas.includes('chatgpt'), item.id);
 });
 
-test('os itens de exemplo têm a situação combinada: em teste, em breve e avançado', () => {
-  const expected = {
-    'skills/consultas-fostermcp': ['em-teste'], 'skills/apresentacao-cliente': ['em-teste'], 'skills/briefing-reuniao': ['em-teste'], 'skills/resumo-vencimentos': ['em-breve'],
-    'agentes/assistente-pre-reuniao': ['em-teste'], 'agentes/fostermcp-grokbot': ['em-breve', true], 'agentes/fostermcp-hermes': ['em-breve', true],
-  };
-  for (const [id, [status, advanced = undefined]] of Object.entries(expected)) {
-    assert.equal(byId(id)?.meta.situacao, status, id);
-    assert.equal(byId(id).meta.avancado, advanced, id);
+test('GrokBot e Hermes ainda não funcionam: itens para eles são avançados e não aparecem como prontos', () => {
+  const agents = all.filter(item => item.meta.plataformas.some(platform => ['grokbot', 'hermes'].includes(platform)));
+  assert.ok(agents.length >= 2);
+  for (const item of agents) {
+    assert.equal(item.meta.avancado, true, item.id);
+    assert.ok(['rascunho', 'em-breve', 'defasado', 'arquivado'].includes(item.meta.situacao), `${item.id}: ${item.meta.situacao}`);
   }
-  const skill = byId('skills/apresentacao-cliente');
-  assert.equal(skill.skill.name, 'apresentacao-cliente');
-  assert.deepEqual(skill.skill.files.map(file => file.name), ['apresentacao-cliente/SKILL.md'], 'o .zip leva só o SKILL.md, sem a página do site');
-  assert.equal(byId('skills/resumo-vencimentos').skill, undefined, 'item em breve não tem arquivo para baixar');
-  assert.ok(byId('agentes/assistente-pre-reuniao').instructions.length > 500);
-  for (const id of ['skills/apresentacao-cliente', 'skills/briefing-reuniao', 'skills/consultas-fostermcp', 'skills/resumo-vencimentos']) assert.ok(byId(id).blocks.resultado, `${id}: exemplo de resultado`);
+});
+
+test('rascunho fica fora do site: só o cabeçalho é conferido, e o conteúdo pode estar pela metade', async () => {
+  const half = `---
+titulo: Skill pela metade
+resumo: Skill que ainda está sendo escrita.
+situacao: rascunho
+plataformas: [claude-desktop]
+atualizado: 2026-10-16
+---
+
+## O que faz
+
+<!-- incluir: nao-existe -->
+
+\`\`\`resultado
+tipo: memo
+\`\`\`
+`;
+  const {problems, items, drafts} = await loadSite(siteCopy({'catalog/skills/pela-metade/pagina.md': half}));
+  assert.deepEqual(problems, [], 'sem SKILL.md, sem as outras seções, com trecho inexistente e bloco incompleto: nada é cobrado');
+  assert.ok(drafts.some(item => item.id === 'skills/pela-metade'));
+  assert.ok(!items.some(item => item.id === 'skills/pela-metade'));
 });
 
 test('o FosterMCP segue o modelo de app: o que é, exemplos, antes de começar, instalação, conexões, atualizar e problemas', () => {
@@ -85,9 +104,10 @@ test('as ferramentas citadas existem no FosterMCP', {skip: !existsSync(appCatalo
   const known = new Set(source.match(/'([a-z]+_[a-z_]+)'/g).map(name => name.slice(1, -1)));
   const pattern = /\b(?:get|list|search|query|consolidate|resolve|create|update)_[a-z_]+\b/g;
   const cited = new Set();
-  for (const item of site.items) {
+  for (const item of all) {
     for (const name of item.meta.ferramentas || []) cited.add(name);
-    for (const text of [readFileSync(join(SITE_ROOT, item.file), 'utf8'), item.skill?.source || '', item.instructions || '']) for (const name of text.match(pattern) || []) cited.add(name);
+    const extra = item.dir ? ['SKILL.md', 'instrucoes.md'].map(name => join(item.dir, name)).filter(existsSync) : [];
+    for (const path of [join(SITE_ROOT, item.file), ...extra]) for (const name of readFileSync(path, 'utf8').match(pattern) || []) cited.add(name);
   }
   const missing = [...cited].filter(name => !known.has(name));
   assert.deepEqual(missing, [], `ferramentas que não existem em src/catalog.js: ${missing.join(', ')}`);
@@ -108,13 +128,17 @@ test('os modelos (_modelo) viram itens válidos quando copiados', async () => {
 });
 
 test('erros comuns de quem escreve viram mensagens claras, com o arquivo', async () => {
-  const skill = readFileSync(join(SITE_ROOT, 'catalog/skills/briefing-reuniao/SKILL.md'), 'utf8');
-  const app = readFileSync(join(SITE_ROOT, 'catalog/apps/fostermcp.md'), 'utf8');
+  // Skill e agente publicados a partir dos modelos (os do repositório estão em rascunho e não são conferidos).
+  const modelo = path => readFileSync(join(SITE_ROOT, 'catalog', path), 'utf8');
+  const skill = modelo('skills/_modelo/SKILL.md'), skillPage = {'catalog/skills/nome-da-skill/pagina.md': modelo('skills/_modelo/pagina.md')};
+  const agentPage = {'catalog/agentes/agente-teste/pagina.md': modelo('agentes/_modelo/pagina.md')};
+  const app = modelo('apps/fostermcp.md'), config = readFileSync(join(SITE_ROOT, 'config.js'), 'utf8');
+  const DRAFT = {'catalog/prompts/guardado.md': PROMPT.replace('titulo: Teste', 'titulo: Guardado').replace('em-teste', 'rascunho')};
   const cases = [
     [{'catalog/prompts/teste.md': PROMPT.replace('titulo: Teste\n', '')}, /teste\.md: Falta o campo "titulo"/],
     [{'catalog/prompts/teste.md': PROMPT.replace('fontes: [atlas]\n', '')}, /Falta o campo "fontes"/],
     [{'catalog/prompts/teste.md': PROMPT.replace('[claude-desktop]', '[claude-web]')}, /plataformas: lista com/],
-    [{'catalog/prompts/teste.md': PROMPT.replace('em-teste', 'publicado')}, /situacao: disponivel, em-teste, em-breve/],
+    [{'catalog/prompts/teste.md': PROMPT.replace('em-teste', 'publicado')}, /situacao: rascunho, em-breve, em-teste, disponivel, em-revisao, defasado, arquivado/],
     [{'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\ntitlo: x')}, /Campo desconhecido "titlo"/],
     [{'catalog/prompts/teste.md': PROMPT.replace('2026-10-16', '2026-02-30')}, /atualizado: data no formato AAAA-MM-DD/],
     [{'catalog/prompts/Teste Ação.md': PROMPT}, /letras minúsculas sem acento/],
@@ -133,12 +157,21 @@ test('erros comuns de quem escreve viram mensagens claras, com o arquivo', async
     [{'catalog/prompts/teste.md': PROMPT.replace('Em testes.', '```exemplos\n- fonte: Atlas\n  pergunta: Sem resposta?\n```')}, /bloco exemplos: lista de 1 a 6 exemplos/],
     [{'catalog/prompts/teste.md': PROMPT.replace('Em testes.', '```resultado\ntipo: memo\ntitulo: X\nlinhas:\n  - [Total, R$ 1,23 mi]\n```')}, /bloco resultado: tipo \(memo ou slide\)/],
     [{'catalog/apps/fostermcp.md': app.replace('### Mac\n', '### Linux\n')}, /"### Linux" não é nome de aba/],
-    [{'catalog/skills/briefing-reuniao/SKILL.md': skill.replace('name: briefing-reuniao', 'name: outro-nome')}, /name deve ser igual ao nome da pasta/],
-    [{'catalog/skills/briefing-reuniao/SKILL.md': skill.replace(/^description: .*$/m, `description: ${'x'.repeat(501)}`)}, /description: de 1 a 500 caracteres/],
-    [{'catalog/skills/briefing-reuniao/SKILL.md': null}, /precisa do arquivo SKILL\.md/],
-    [{'catalog/agentes/assistente-pre-reuniao/instrucoes.md': null}, /precisa do arquivo instrucoes\.md/],
+    [{...skillPage, 'catalog/skills/nome-da-skill/SKILL.md': skill.replace('name: nome-da-skill', 'name: outro-nome')}, /name deve ser igual ao nome da pasta/],
+    [{...skillPage, 'catalog/skills/nome-da-skill/SKILL.md': skill.replace(/^description: .*$/m, `description: ${'x'.repeat(501)}`)}, /description: de 1 a 500 caracteres/],
+    [skillPage, /nome-da-skill\/pagina\.md: A pasta da skill precisa do arquivo SKILL\.md/],
+    [agentPage, /agente-teste\/pagina\.md: A pasta do agente precisa do arquivo instrucoes\.md/],
     [{'catalog/prompts/teste.txt': 'x'}, /Só arquivos \.md ou pastas/],
     [{'config.js': "export default {nome: 'Central', endereco: 'http://exemplo.com'};"}, /config\.js: /],
+    [{'config.js': config.replace(/downloads: (true|false)/, "downloads: 'sim'")}, /config\.js: downloads: true liga os botões/],
+    [{'conteudo/tipos/skills.md': `---\nresumo: Frase.\nvazio: ${'x'.repeat(161)}\n---\n`}, /tipos\/skills\.md: vazio: uma frase de até 160 caracteres/],
+    // Rascunho: o cabeçalho é conferido; e nada publicado pode apontar para ele, porque ele não vira página.
+    [{'catalog/prompts/guardado.md': DRAFT['catalog/prompts/guardado.md'].replace('2026-10-16', '2026-02-30')}, /guardado\.md: atualizado: data no formato AAAA-MM-DD/],
+    [{...DRAFT, 'catalog/prompts/teste.md': PROMPT.replace('Em testes.', 'Veja [o outro](/prompts/guardado/#quando-usar).')}, /teste\.md: O link \/prompts\/guardado\/#quando-usar leva a "Guardado" \(prompts\/guardado\), que está em rascunho e não entra no site/],
+    [{...DRAFT, 'conteudo/novidades.yml': '- data: 2026-10-16\n  texto: Prompt novo.\n  link: /prompts/guardado/\n'}, /novidades\.yml: O link \/prompts\/guardado\/ leva a "Guardado"/],
+    [{...DRAFT, 'conteudo/paginas/ajuda.md': '---\ntitulo: Ajuda\nresumo: Ajuda.\n---\n\nVeja o [prompt](/prompts/guardado).\n'}, /ajuda\.md: O link \/prompts\/guardado leva a "Guardado"/],
+    [{...DRAFT, 'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: defasado\nsubstituido_por: prompts/guardado')}, /substituido_por: "prompts\/guardado" está em rascunho/],
+    [{...DRAFT, 'catalog/prompts/teste.md': PROMPT.replace('situacao: em-teste', 'situacao: em-teste\nrequer: [prompts/guardado]')}, /requer: "prompts\/guardado" está em rascunho/],
   ];
   for (const [files, expected] of cases) {
     const problems = await problemsIn(files);
@@ -153,4 +186,11 @@ test('os guias acompanham o código: o AGENTS.md documenta todos os campos, situ
   assert.match(readFileSync(join(SITE_ROOT, 'CLAUDE.md'), 'utf8'), /^@AGENTS\.md$/m, 'CLAUDE.md importa o AGENTS.md');
   const guide = readFileSync(join(SITE_ROOT, 'COMO-EDITAR.md'), 'utf8');
   for (const name of Object.keys(STATUS)) assert.ok(guide.includes(`\`${name}\``), `COMO-EDITAR.md não explica \`${name}\``);
+  // As chaves de config.js que ligam e desligam partes do site, e a frase das listas vazias.
+  const readme = readFileSync(join(SITE_ROOT, 'README.md'), 'utf8');
+  for (const name of ['previa', 'downloads', 'indexar']) {
+    assert.ok(agents.includes(`\`${name}\``), `AGENTS.md não cita \`${name}\``);
+    assert.ok(readme.includes(`\`${name}`), `README.md não explica \`${name}\``);
+  }
+  assert.ok(agents.includes('`vazio`'), 'AGENTS.md não cita `vazio`');
 });

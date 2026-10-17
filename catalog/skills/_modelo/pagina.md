@@ -2,7 +2,7 @@
 # Página da skill no site. A pasta inteira (menos este arquivo) vira o .zip para download.
 titulo: Nome da skill
 resumo: Skill que [faz o quê]. A primeira frase diz o que ela é.
-situacao: em-teste # disponivel, em-teste, em-breve, defasado ou arquivado
+situacao: em-teste # rascunho (fora do site), em-breve, em-teste, disponivel, em-revisao, defasado ou arquivado
 plataformas: [claude-desktop, chatgpt-codex, claude-code, chatgpt]
 fontes: [atlas]
 atualizado: 2026-10-16

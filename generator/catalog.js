@@ -13,6 +13,8 @@ const realDay = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test
 const text = max => value => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 const list = check => value => Array.isArray(value) && value.length > 0 && value.every(check) && new Set(value).size === value.length;
 const MINUTES = value => typeof value === 'string' && /^\d{1,3} min$/.test(value);
+// Destinos dos links do Markdown que começam com /, como [texto](/skills/nome/#secao), inclusive dentro de blocos.
+const localLinks = source => [...String(source).matchAll(/\]\(\s*<?(\/(?!\/)[^)\s>]*)/g)].map(match => match[1]);
 
 // Campos do cabeçalho de cada item. A mensagem diz ao autor o que escrever.
 export const FIELDS = {
@@ -161,13 +163,20 @@ export async function loadSite(root) {
     (entry.link === undefined || (typeof entry.link === 'string' && entry.link.startsWith('/')))));
   if (news) news.sort((a, b) => b.data.localeCompare(a.data));
 
+  // Arquivos e links a conferir no fim: nenhum texto publicado pode levar a um rascunho, que não vira página.
+  const linkSources = [];
+  if (home) linkSources.push(['conteudo/inicio.yml', [home.primeiraVez.link, ...home.primeiraVez.passos.flatMap(step => localLinks(step.texto))]]);
+  if (news) linkSources.push(['conteudo/novidades.yml', news.flatMap(entry => [entry.link, ...localLinks(entry.texto)].filter(Boolean))]);
+
   const intros = {};
   for (const [area, {title}] of Object.entries(AREAS)) {
     const path = `conteudo/tipos/${area}.md`;
     if (!existsSync(join(root, path))) { problems.push({file: path, message: `Falta o texto de apresentação de ${title}.`}); continue; }
     const {data, body} = parseFrontMatter(await read(path), path, problems);
     if (!text(160)(data.resumo)) problems.push({file: path, message: 'O cabeçalho precisa de resumo: uma frase de até 160 caracteres.'});
-    intros[area] = {resumo: data.resumo, body: expand(body, path)};
+    if (data.vazio !== undefined && !text(160)(data.vazio)) problems.push({file: path, message: 'vazio: uma frase de até 160 caracteres para quando não houver itens, como "Em breve. As primeiras skills estão sendo preparadas."'});
+    intros[area] = {resumo: data.resumo, vazio: data.vazio ?? 'Em breve. Os primeiros itens estão sendo preparados.', body: expand(body, path)};
+    linkSources.push([path, localLinks(intros[area].body)]);
   }
 
   const pages = [];
@@ -177,13 +186,15 @@ export async function loadSite(root) {
     const {data, body} = parseFrontMatter(await readFile(path, 'utf8'), file, problems);
     if (!text(80)(data.titulo) || !text(220)(data.resumo)) problems.push({file, message: 'O cabeçalho precisa de titulo e resumo.'});
     if (!SLUG.test(slug) || Object.values(TYPES).some(type => type.folder === slug) || ['catalogo', 'assets'].includes(slug)) problems.push({file, message: 'Nome de arquivo inválido ou reservado.'});
-    const page = {slug, file, meta: data, url: `${slug}/`, ...splitSections(expand(body, file))};
+    const source = expand(body, file);
+    const page = {slug, file, meta: data, url: `${slug}/`, ...splitSections(source)};
+    linkSources.push([file, localLinks(source)]);
     findTabs(page.sections, null, file, problems);
     checkComponents(page, problems);
     pages.push(page);
   }
 
-  const items = [];
+  const items = [], drafts = [];
   for (const [type, {folder}] of Object.entries(TYPES)) {
     const dir = join(root, 'catalog', folder);
     if (!existsSync(dir)) continue;
@@ -209,6 +220,9 @@ export async function loadSite(root) {
       if (meta.substituido_por && !['defasado', 'arquivado'].includes(meta.situacao)) problems.push({file, message: 'substituido_por só vale para itens com situacao defasado ou arquivado.'});
       const soon = meta.situacao === 'em-breve';
       const item = {type, folder, slug, id: `${folder}/${slug}`, url: `${folder}/${slug}/`, file, meta, dir: isFolder ? join(dir, slug) : null};
+      // Rascunho fica só no repositório e não vira página: confere o cabeçalho, não o conteúdo, que pode estar pela metade.
+      // A conferência completa vale quando a situação muda.
+      if (meta.situacao === 'rascunho') { drafts.push(item); continue; }
       const itemVariables = {titulo: meta.titulo, slug, url: `/${item.url}`, pasta: slug, zip: `/${item.url}${slug}.zip`, zipNome: `${slug}.zip`};
       if (type === 'skill' && existsSync(join(item.dir, 'SKILL.md'))) {
         item.skill = checkSkill(item, await readFile(join(item.dir, 'SKILL.md'), 'utf8'), problems);
@@ -224,7 +238,9 @@ export async function loadSite(root) {
         // Instruções de GPT personalizado aceitam até 8000 caracteres.
         if (!item.instructions || item.instructions.length > 8000) problems.push({file: `catalog/${folder}/${slug}/instrucoes.md`, message: 'As instruções precisam ter de 1 a 8000 caracteres.'});
       } else if (type === 'agente' && !soon) problems.push({file, message: 'A pasta do agente precisa do arquivo instrucoes.md (só itens em breve ficam sem ele).'});
-      Object.assign(item, splitSections(expand(body, file, itemVariables)));
+      const source = expand(body, file, itemVariables);
+      Object.assign(item, splitSections(source));
+      linkSources.push([file, localLinks(source)]);
       if (type === 'prompt') {
         item.prompt = item.sections.find(section => section.key === normalizeKey('Prompt'))?.raw || '';
         if (!item.prompt) problems.push({file, message: 'Escreva o texto do prompt logo abaixo de "## Prompt".'});
@@ -235,20 +251,33 @@ export async function loadSite(root) {
       items.push(item);
     }
   }
-  const byId = new Map(items.map(item => [item.id, item]));
+  const byId = new Map([...items, ...drafts].map(item => [item.id, item]));
+  const isDraft = id => byId.get(id)?.meta.situacao === 'rascunho';
   for (const item of items) {
-    for (const ref of item.meta.requer || []) if (!byId.has(ref)) problems.push({file: item.file, message: `requer: "${ref}" não existe no catálogo.`});
+    for (const ref of item.meta.requer || []) {
+      if (!byId.has(ref)) problems.push({file: item.file, message: `requer: "${ref}" não existe no catálogo.`});
+      else if (isDraft(ref)) problems.push({file: item.file, message: `requer: "${ref}" está em rascunho e não entra no site. Publique esse item antes ou tire-o da lista.`});
+    }
     if (item.meta.app && byId.get(item.meta.app)?.type !== 'app') problems.push({file: item.file, message: `app: "${item.meta.app}" não é um app do catálogo.`});
+    else if (item.meta.app && isDraft(item.meta.app)) problems.push({file: item.file, message: `app: "${item.meta.app}" está em rascunho e não entra no site.`});
     const replacement = item.meta.substituido_por && byId.get(item.meta.substituido_por);
     if (item.meta.substituido_por && !replacement) problems.push({file: item.file, message: `substituido_por: "${item.meta.substituido_por}" não existe no catálogo.`});
     else if (replacement === item) problems.push({file: item.file, message: 'substituido_por não pode apontar para o próprio item.'});
     else if (replacement?.meta.situacao === 'arquivado') problems.push({file: item.file, message: `substituido_por: "${item.meta.substituido_por}" está arquivado; aponte para um item em uso.`});
+    else if (replacement?.meta.situacao === 'rascunho') problems.push({file: item.file, message: `substituido_por: "${item.meta.substituido_por}" está em rascunho e não entra no site; aponte para um item publicado.`});
     if (item.type === 'app' && item.meta.download && item.meta.download !== config.fostermcp.feed.split('/')[0])
       problems.push({file: item.file, message: `download: só existe o version.json de ${config.fostermcp.feed}.`});
+  }
+  // Rascunhos não viram página: um link para eles levaria a um endereço que não existe.
+  for (const [file, hrefs] of linkSources) for (const href of hrefs) {
+    const path = `${href.split(/[?#]/)[0]}/`;
+    const draft = drafts.find(candidate => path.startsWith(`/${candidate.url}`));
+    if (draft) problems.push({file, message: `O link ${href} leva a "${draft.meta.titulo}" (${draft.id}), que está em rascunho e não entra no site. Tire o link ou mude a situação do item.`});
   }
   // Na ordem dos tipos; dentro do tipo, pelo campo ordem e depois pelo título.
   const typeOrder = Object.keys(TYPES);
   items.sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type) || (a.meta.ordem ?? 100) - (b.meta.ordem ?? 100) ||
     String(a.meta.titulo).localeCompare(String(b.meta.titulo), 'pt-BR'));
-  return {config, home, news, intros, pages, items, problems};
+  // items são os itens publicados (todas as situações menos rascunho); drafts ficam fora do site.
+  return {config, home, news, intros, pages, items, drafts, problems};
 }

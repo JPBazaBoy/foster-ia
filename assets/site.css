@@ -27,6 +27,7 @@
   --ambar: #8A5A12; --ambar-fundo: #FBF0DC;
   --roxo: #4B3F84; --roxo-fundo: #EAE6F7;
   --vermelho: #9B2C2C; --vermelho-fundo: #FBEAEA;
+  --anil: #2B5487; --anil-fundo: #E5EDF8;
   --botao-escuro: var(--marinho); --botao-escuro-texto: var(--creme);
   --painel-exemplo: var(--noite);
   --foco: var(--dourado-detalhe);
@@ -42,6 +43,7 @@
     --conversa-fundo: #20283A; --conversa-borda: #2E384D; --conversa-tag: #2A3448;
     --verde: #7FD3DF; --verde-fundo: rgb(19 112 127 / 28%); --ambar: #F5C56E; --ambar-fundo: rgb(252 187 91 / 14%);
     --roxo: #C3B8F0; --roxo-fundo: rgb(120 100 200 / 22%); --vermelho: #F1A4A4; --vermelho-fundo: rgb(155 44 44 / 25%);
+    --anil: #A9C4EC; --anil-fundo: rgb(59 78 115 / 35%);
     --botao-escuro: var(--creme); --botao-escuro-texto: var(--marinho); --dourado-texto: #E2B568; --painel-exemplo: #0A0E15;
     color-scheme: dark;
   }
@@ -115,6 +117,7 @@ kbd { font-family: var(--sans); }
 .selo::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .selo-ok { background: var(--verde-fundo); color: var(--verde); }
 .selo-teste { background: var(--ambar-fundo); color: var(--ambar); }
+.selo-revisao { background: var(--anil-fundo); color: var(--anil); }
 .selo-breve { background: var(--cinza); color: var(--suave); }
 .selo-avancado { background: var(--roxo-fundo); color: var(--roxo); }
 .selo-defasado, .selo-revisar { background: var(--vermelho-fundo); color: var(--vermelho); }
@@ -141,7 +144,7 @@ kbd { font-family: var(--sans); }
 .primeira-vez li { counter-increment: passo; display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; font-size: 14.5px; color: var(--texto-2); }
 .primeira-vez li::before { content: counter(passo); width: 20px; height: 20px; border-radius: 50%; background: var(--botao-escuro); color: var(--botao-escuro-texto); font-size: 11.5px; font-weight: 700; display: grid; place-items: center; }
 .primeira-vez .tempo { color: var(--suave); font-size: 13px; white-space: nowrap; }
-.primeira-vez .botao { margin-top: 12px; }
+.primeira-vez-acao { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
 .categoria { padding-top: 48px; }
 .categoria-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
 .categoria-topo h2 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
