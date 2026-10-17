@@ -15,7 +15,7 @@ Este repositório é a Central de IA dos assessores: um site estático gerado a 
 - **Repositório público.** Nunca grave dado real de cliente, nome de pessoa, telefone, e-mail, número de conta, patrimônio real, senha ou token, nem em prints, exemplos ou mensagens de commit. Exemplos usam dados fictícios, marcados como fictícios, com clientes de código 900001, 900014 etc.
 - **Honestidade de plataforma.** `plataformas` lista só onde o item funciona hoje. Gemini e Grok entram apenas em `plataformas_em_breve` (aparecem como "em breve"). Itens para GrokBot e Hermes Agent são `situacao: em-breve` e `avancado: true`. A integração com o WhatsApp não é oficial: não diga o contrário.
 - **FosterMCP só chega ao ChatGPT pela aba Codex** (`chatgpt-codex`). `chatgpt` (Projetos e GPTs) serve para instruções coladas, nunca para consultar dados do FosterMCP.
-- **Prévia.** Não troque `previa` nem `indexar` em `config.js`, não crie releases e não publique instaladores sem pedido explícito do responsável pela central.
+- **Prévia e downloads.** Não troque `previa`, `downloads` nem `indexar` em `config.js`, não crie releases e não publique instaladores sem pedido explícito do responsável pela central. `previa` liga a faixa "Prévia em teste" e o pedido para os buscadores não listarem o site; `downloads` liga, à parte, os botões de download do FosterMCP e exige o `version.json`.
 - **Endereços fixos.** Não mude `repositorio`, `endereco` nem `fostermcp.feed`/`fostermcp.arquivos` em `config.js`: o app FosterMCP lê `public/fostermcp/version.json` pelo endereço raw do repositório. Esse arquivo só é gerado por `npm run release`; não edite à mão.
 - **Não apague itens.** Para tirar de uso, arquive (`situacao: arquivado`). Os links antigos continuam funcionando.
 - **Gerador.** Mudanças em `generator/`, `assets/` e `test/` só quando o pedido for técnico. Pedidos de conteúdo se resolvem em `catalog/`, `conteudo/` e `public/`.
@@ -122,4 +122,4 @@ Os cartões da página inicial usam o primeiro `exemplos` com `linhas` e o prime
 - `conteudo/inicio.yml`: título, texto e o quadro "Primeira vez aqui?" com exatamente 3 passos (`texto` e `tempo`).
 - `conteudo/tipos/<area>.md`: a frase de cada categoria (`resumo`) e um texto opcional.
 - `conteudo/paginas/`: páginas avulsas, como a Ajuda.
-- `config.js`: nome, assinatura, cores, endereços, contato, aviso e as chaves `previa` e `indexar`. Só mexa com pedido explícito.
+- `config.js`: nome, assinatura, cores, endereços, contato, aviso e as chaves `previa`, `downloads` e `indexar`. Só mexa com pedido explícito.

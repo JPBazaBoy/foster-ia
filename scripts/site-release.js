@@ -88,7 +88,8 @@ export async function prepareRelease(argv = process.argv.slice(2), {log = consol
   1. Crie a release v${version} em ${config.repositorio} com os dois arquivos:
      gh release create v${version} "${join(out, names.windows)}" "${join(out, names.mac)}" --repo ${config.repositorio} --title "FosterMCP ${version}"
   2. Confira os dois downloads.
-  3. Só então envie o version.json para a main (o app lê o arquivo de lá). No lançamento, troque previa para false em config.js.`);
+  3. Só então envie o version.json para a main (o app lê o arquivo de lá). Na primeira versão, troque downloads para true
+     em config.js para ligar os botões do site.`);
   return {feed, jsonPath, out};
 }
 

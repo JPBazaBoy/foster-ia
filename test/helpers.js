@@ -6,14 +6,15 @@ import {SITE_ROOT} from '../generator/build.js';
 
 const copies = [];
 // Cópia do conteúdo do site numa pasta temporária, sem version.json. files troca ou cria arquivos
-// ({caminho: texto | null}); settings troca chaves true/false de config.js (padrão: prévia ligada).
+// ({caminho: texto | null}); settings troca chaves true/false de config.js (padrão: prévia ligada e downloads
+// desligados, porque a cópia não leva o version.json).
 export function siteCopy(files = {}, settings = {}) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'central-ia-site-')));
   copies.push(root);
   for (const name of ['config.js', 'conteudo', 'catalog', 'public', 'assets'].filter(name => existsSync(join(SITE_ROOT, name))))
     cpSync(join(SITE_ROOT, name), join(root, name), {recursive: true, filter: source => !source.endsWith('version.json')});
   let config = readFileSync(join(root, 'config.js'), 'utf8');
-  for (const [key, value] of Object.entries({previa: true, ...settings})) {
+  for (const [key, value] of Object.entries({previa: true, downloads: false, ...settings})) {
     const pattern = new RegExp(`^(\\s*${key}:\\s*)(true|false)`, 'm');
     if (!pattern.test(config)) throw new Error(`config.js sem a chave ${key}`);
     config = config.replace(pattern, `$1${value}`);

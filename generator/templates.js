@@ -21,8 +21,8 @@ export function renderSite(site, {imageExists, assets}) {
   const itemsOf = area => listed.filter(item => AREAS[area].types.includes(item.type));
   // Data de hoje em São Paulo (AAAA-MM-DD), para o selo "Pode estar desatualizado".
   const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo'}).format(site.builtAt);
-  // Downloads do FosterMCP só fora da prévia, com o version.json em public/ (fora da prévia o build exige o arquivo).
-  const release = !config.previa && feed ? feed : null;
+  // Downloads do FosterMCP com downloads: true em config.js, independente da prévia (o build exige o version.json).
+  const release = config.downloads && feed ? feed : null;
   const areaOf = item => TYPES[item.type].area;
   const nav = [['inicio', '', 'Início'], ...Object.entries(AREAS).map(([key, area]) => [key, `${key}/`, area.label]), ['ajuda', 'ajuda/', 'Ajuda']];
   const signature = extra => `<span class="assinatura${extra}"><span class="assinatura-nome">${esc(config.assinatura.nome)}</span>` +
@@ -288,8 +288,8 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
     if (item.type === 'app' && item.meta.download) {
       const update = item.sections.some(section => section.title === 'Atualizar');
       const updateLink = update ? '<p class="acoes-nota">Já tem instalado? <a href="#atualizar">Veja como atualizar</a></p>' : '';
-      // Na prévia os instaladores não estão publicados: nenhum link que leve a 404.
-      if (!release) return `<div class="baixar" id="baixar">${downloadOff}<p class="acoes-nota">Na prévia, os instaladores ainda não estão disponíveis.</p>${updateLink}</div>`;
+      // Com downloads: false os instaladores não estão publicados: nenhum link que leve a 404.
+      if (!release) return `<div class="baixar" id="baixar">${downloadOff}<p class="acoes-nota">Os instaladores ainda não estão publicados.</p>${updateLink}</div>`;
       const data = release, installers = config.fostermcp.arquivos;
       return `<div class="baixar" id="baixar">
   <a class="botao botao-ouro" href="${esc(config.latestDownload(installers.windows))}">Baixar para Windows · ${formatSize(data.windows.sizeBytes)}</a>

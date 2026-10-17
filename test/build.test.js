@@ -58,7 +58,7 @@ test('gera início, busca, categorias, itens, ajuda e 404, com endereços curtos
   assert.deepEqual(result.soon.sort(), ['agentes/fostermcp-grokbot', 'agentes/fostermcp-hermes', 'skills/resumo-vencimentos']);
 });
 
-test('modo prévia: faixa em todas as páginas, noindex, robots.txt fechado e nenhum link de instalador', () => {
+test('modo prévia com downloads desligados: faixa em todas as páginas, noindex, robots.txt fechado e nenhum link de instalador', () => {
   for (const [page, text] of Object.entries(html)) {
     if (!text.includes('<main')) continue;
     assert.match(text, /<p class="faixa-previa"><span class="container">Prévia em teste — conteúdo em construção<\/span><\/p>/, page);
@@ -68,8 +68,8 @@ test('modo prévia: faixa em todas as páginas, noindex, robots.txt fechado e ne
   assert.equal(read(join(out, 'robots.txt')), 'User-agent: *\nDisallow: /\n');
   for (const page of ['index.html', 'apps/index.html', 'apps/fostermcp/index.html'])
     assert.match(html[page], /<span class="botao botao-desativado" aria-disabled="true">Download liberado após a validação<\/span>/, page);
-  assert.match(html['apps/fostermcp/index.html'], /Na prévia, os instaladores ainda não estão disponíveis\./);
-  assert.doesNotMatch(html['apps/fostermcp/index.html'], /Versão \d/, 'sem versão inventada na prévia');
+  assert.match(html['apps/fostermcp/index.html'], /Os instaladores ainda não estão publicados\./);
+  assert.doesNotMatch(html['apps/fostermcp/index.html'], /Versão \d/, 'sem versão inventada sem o version.json');
   assert.equal(existsSync(join(out, 'fostermcp/version.json')), false);
 });
 
@@ -184,24 +184,37 @@ test('cada skill com SKILL.md vira um .zip com a pasta na raiz; os agentes viram
   for (const slug of ['fostermcp-grokbot', 'fostermcp-hermes']) assert.equal(existsSync(join(out, `agentes/${slug}/AGENTS.md`)), false, slug);
 });
 
-test('no lançamento (previa: false) o build exige o version.json e liga os downloads com versão, data e tamanhos', async () => {
-  const copy = siteCopy({}, {previa: false});
-  await assert.rejects(build({root: copy, out: join(copy, '_lancamento')}), error => error instanceof BuildError && /npm run release/.test(error.problems.join()));
+test('downloads: true liga os botões com versão, data e tamanhos; a prévia continua com faixa e noindex', async () => {
+  const copy = siteCopy({}, {downloads: true});
+  await assert.rejects(build({root: copy, out: join(copy, '_downloads')}), error => error instanceof BuildError && /npm run release antes de trocar downloads para true/.test(error.problems.join()));
   const config = await writeFeed(copy);
-  const launched = await build({root: copy, out: join(copy, '_lancamento')});
-  assert.equal(launched.feed.version, '9.8.7');
-  const page = read(join(copy, '_lancamento/apps/fostermcp/index.html'));
-  for (const name of Object.values(config.fostermcp.arquivos)) assert.ok(page.includes(`href="${config.latestDownload(name)}"`), `${name}: botão leva ao instalador mais recente`);
+  const built = await build({root: copy, out: join(copy, '_downloads')});
+  assert.equal(built.feed.version, '9.8.7');
+  const page = read(join(copy, '_downloads/apps/fostermcp/index.html'));
+  for (const name of Object.values(config.fostermcp.arquivos)) {
+    assert.equal(config.latestDownload(name), `https://github.com/${config.repositorio}/releases/latest/download/${name}`);
+    assert.ok(page.includes(`href="${config.latestDownload(name)}"`), `${name}: botão leva ao instalador mais recente`);
+    assert.ok(read(join(copy, '_downloads/index.html')).includes(`href="${config.latestDownload(name)}"`), `${name}: botão no cartão da Início`);
+  }
   assert.match(page, /Baixar para Windows · 50 MB/);
   assert.match(page, /Baixar para Mac · 70 MB/);
   assert.match(page, /Versão 9\.8\.7 · 02\/11\/2026/);
   assert.match(page, /Novidade sintética\./);
-  assert.doesNotMatch(page, /faixa-previa|Download liberado após a validação/);
+  assert.doesNotMatch(page, /Download liberado após a validação/);
+  assert.match(page, /<p class="faixa-previa">/, 'a prévia continua');
+  assert.match(page, /<meta name="robots" content="noindex, nofollow">/);
+  assert.equal(read(join(copy, '_downloads', config.fostermcp.feed)), read(join(copy, 'public', config.fostermcp.feed)));
+});
+
+test('fora da prévia (previa: false) some a faixa; indexar decide o noindex e downloads continua valendo sozinho', async () => {
+  const copy = siteCopy({}, {previa: false});
+  await build({root: copy, out: join(copy, '_lancamento')});
+  const page = read(join(copy, '_lancamento/apps/fostermcp/index.html'));
+  assert.doesNotMatch(page, /faixa-previa/);
+  assert.match(page, /Download liberado após a validação/, 'sem downloads: true, nenhum botão de instalador');
   assert.match(page, /<meta name="robots" content="noindex, nofollow">/, 'com indexar: false os buscadores continuam avisados');
-  assert.equal(read(join(copy, '_lancamento', config.fostermcp.feed)), read(join(copy, 'public', config.fostermcp.feed)));
   // indexar: true (fora da prévia) libera os buscadores.
   const open = siteCopy({}, {previa: false, indexar: true});
-  await writeFeed(open);
   await build({root: open, out: join(open, '_site')});
   assert.doesNotMatch(read(join(open, '_site/index.html')), /name="robots"/);
   assert.equal(read(join(open, '_site/robots.txt')), 'User-agent: *\nAllow: /\n');

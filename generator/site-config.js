@@ -22,6 +22,7 @@ export function checkConfig(config) {
   if (!address || address.protocol !== 'https:' || address.search || address.hash || address.username || address.password || !address.pathname.endsWith('/'))
     bad('endereco', 'endereço https terminado em /, sem ? nem #.');
   if (typeof config.previa !== 'boolean') bad('previa', 'true durante a prévia, false no lançamento.');
+  if (typeof config.downloads !== 'boolean') bad('downloads', 'true liga os botões de download do FosterMCP (exige o version.json); false desliga.');
   if (typeof config.indexar !== 'boolean') bad('indexar', 'true ou false.');
   if (!text(config.contato?.nome, 120)) bad('contato.nome', 'texto de até 120 caracteres, como "o responsável pela central".');
   if (config.contato?.link && !/^(https:\/\/|mailto:)/.test(config.contato.link)) bad('contato.link', 'vazio, https://… ou mailto:….');

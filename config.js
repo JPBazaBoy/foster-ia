@@ -26,9 +26,14 @@ export default {
   repositorio: 'JPBazaBoy/foster-ia',
   endereco: 'https://jpbazaboy.github.io/foster-ia/',
 
-  // Modo prévia: faixa "Prévia em teste" em todas as páginas, pedido para os buscadores não listarem o site
-  // e downloads do FosterMCP desligados. Troque para false no lançamento, com a aprovação do responsável.
+  // Modo prévia: faixa "Prévia em teste" em todas as páginas e pedido para os buscadores não listarem o site.
+  // Troque para false no lançamento, com a aprovação do responsável.
   previa: true,
+
+  // Downloads do FosterMCP, independentes da prévia. true liga os botões "Baixar para Windows" e "Mac", que levam
+  // ao instalador da última release do GitHub; exige public/fostermcp/version.json (gerado por npm run release).
+  // false mostra "Download liberado após a validação", sem link para instalador.
+  downloads: false,
 
   // Fora da prévia: false pede aos buscadores (Google etc.) que não listem o site. Quem tem o link acessa normalmente.
   indexar: false,

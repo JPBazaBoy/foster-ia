@@ -33,15 +33,13 @@ Todo envio para a `main` publica o site sozinho, em 1 a 2 minutos: o workflow [`
 
 O repositório é público: é o que permite usar o GitHub Pages sem plano pago. Por isso, **nada de dado de cliente, nome, telefone, e-mail ou senha** em nenhum arquivo, nem nos prints.
 
-## Modo prévia
+## Modo prévia e downloads
 
-`previa: true` em [`config.js`](config.js) liga, de uma vez:
+Três chaves de [`config.js`](config.js), independentes:
 
-- a faixa "Prévia em teste — conteúdo em construção" no topo de todas as páginas;
-- `<meta name="robots" content="noindex, nofollow">` em todas as páginas e um `robots.txt` com `Disallow: /`. Num endereço `usuario.github.io/projeto` os buscadores só leem o `robots.txt` da raiz do domínio; quem segura a indexação é a meta `noindex`. O `robots.txt` passa a valer se o site ganhar domínio próprio;
-- os botões de download do FosterMCP desligados, com o texto "Download liberado após a validação". Nenhum link leva a um instalador que ainda não existe.
-
-Fora da prévia, `indexar: false` continua pedindo aos buscadores que não listem o site.
+- `previa: true` liga a faixa "Prévia em teste — conteúdo em construção" no topo de todas as páginas, `<meta name="robots" content="noindex, nofollow">` em todas elas e um `robots.txt` com `Disallow: /`. Num endereço `usuario.github.io/projeto` os buscadores só leem o `robots.txt` da raiz do domínio; quem segura a indexação é a meta `noindex`. O `robots.txt` passa a valer se o site ganhar domínio próprio.
+- `downloads: true` liga os botões de download do FosterMCP (página do app e cartão da Início), com versão, data e tamanho tirados do `version.json`. Os botões levam a `https://github.com/JPBazaBoy/foster-ia/releases/latest/download/<nome fixo>`, que sempre entrega o instalador da última release. Com `downloads: false`, aparece "Download liberado após a validação" e nenhum link leva a um instalador.
+- `indexar: false`, fora da prévia, continua pedindo aos buscadores que não listem o site.
 
 ## O version.json do FosterMCP
 
@@ -55,7 +53,7 @@ https://raw.githubusercontent.com/JPBazaBoy/foster-ia/main/public/fostermcp/vers
 - O app só aceita links no host do próprio arquivo ou em `github.com`. Por isso a `downloadPage` do `version.json` é `https://github.com/JPBazaBoy/foster-ia/releases/latest`, e não a página do site.
 - No `version.json`, cada instalador aponta o arquivo exato da versão (`releases/download/v<versão>/<nome fixo>`), para combinar com o sha256. Os botões do site usam `releases/latest/download/<nome fixo>`, que sempre leva ao mais recente.
 - Os nomes fixos (`FosterMCP-Windows.exe` e `FosterMCP-Mac.dmg`) e o caminho do arquivo ficam em `config.js`.
-- Na prévia o arquivo é opcional. Fora dela (`previa: false`), o build exige o arquivo e confere o contrato.
+- Com `downloads: false` o arquivo é opcional. Com `downloads: true` o build exige o arquivo e confere o contrato. Um arquivo presente é sempre conferido.
 
 ### Publicar uma versão do FosterMCP
 
@@ -68,20 +66,20 @@ https://raw.githubusercontent.com/JPBazaBoy/foster-ia/main/public/fostermcp/vers
 
    O script calcula sha256 e tamanho, grava `public/fostermcp/version.json`, copia os instaladores com os nomes fixos para `release-publicar/` (fora do git) e mostra o comando da release. Ele não publica nada.
 3. Crie a release no GitHub com os dois arquivos de `release-publicar/` (o comando `gh release create …` que o script mostrou) e confira os dois downloads.
-4. Só então faça commit do `version.json` e envie para a `main`. A partir daí, quem tem o app configurado recebe o aviso.
+4. Só então faça commit do `version.json`, troque `downloads` para `true` em `config.js` (só na primeira versão) e envie para a `main`. A partir daí, quem tem o app configurado recebe o aviso, e os botões do site levam aos instaladores novos.
 
 ### Sair da prévia (lançamento)
 
 Só com a aprovação do responsável pela central, depois de revisar textos provisórios em `config.js`, itens `em-teste`, prints, licenças do instalador e ausência de dados pessoais:
 
-1. Publique a primeira versão do FosterMCP (passos acima).
+1. Publique a versão do FosterMCP e ligue `downloads` (passos acima), se ainda não estiverem.
 2. Troque `previa: true` por `previa: false` em `config.js`, rode `npm test` e envie para a `main`.
 
 ## Onde fica cada coisa
 
 | Pasta ou arquivo | O que tem |
 | --- | --- |
-| `config.js` | Nome, assinatura, cores, endereços, contato, aviso e a chave `previa`. Único lugar para essas coisas. |
+| `config.js` | Nome, assinatura, cores, endereços, contato, aviso e as chaves `previa`, `downloads` e `indexar`. Único lugar para essas coisas. |
 | `catalog/` | Os itens, uma pasta por tipo: `apps`, `conectores`, `skills`, `agentes`, `prompts`, `tutoriais`. Cada pasta tem um `_modelo` para copiar. |
 | `conteudo/` | Página inicial (`inicio.yml`), novidades (`novidades.yml`), frase de cada categoria (`tipos/`), páginas avulsas como a Ajuda (`paginas/`) e trechos repetidos (`trechos/`). |
 | `public/` | Arquivos copiados como estão: prints em `public/imagens/` e o `fostermcp/version.json`. |

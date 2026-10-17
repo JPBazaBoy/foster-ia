@@ -16,14 +16,14 @@ export class BuildError extends Error {
   constructor(problems) { super(`${problems.length} problema(s) no site`); this.problems = problems; }
 }
 
-// O version.json do FosterMCP fica em public/ e é gerado por npm run release. Na prévia ele é opcional (os
-// downloads ficam desligados); fora da prévia o build exige o arquivo. Devolve os dados ou null.
+// O version.json do FosterMCP fica em public/ e é gerado por npm run release. Com downloads: false ele é opcional;
+// com downloads: true o build exige o arquivo, porque os botões mostram versão e tamanhos. Devolve os dados ou null.
 export async function loadFeed(root, config) {
   const name = `public/${config.fostermcp.feed}`;
   const path = join(root, name);
   if (!existsSync(path)) {
-    if (config.previa) return null;
-    throw new BuildError([`${name}: falta o arquivo de versões. Gere com npm run release antes de trocar previa para false.`]);
+    if (!config.downloads) return null;
+    throw new BuildError([`${name}: falta o arquivo de versões. Gere com npm run release antes de trocar downloads para true.`]);
   }
   let data;
   try { data = JSON.parse(await readFile(path, 'utf8')); } catch (error) { throw new BuildError([`${name}: JSON inválido (${error.message}).`]); }
@@ -92,8 +92,9 @@ export async function build({root = SITE_ROOT, out = join(root, '_site'), dev = 
 
 export function report(result, log = console.log) {
   log(`Site gerado em ${result.out}: ${result.pages} páginas.`);
-  if (result.config.previa) log(`Modo prévia: faixa de aviso, noindex e downloads do FosterMCP desligados${result.feed ? '' : ' (ainda sem public/fostermcp/version.json)'}. No lançamento, troque previa para false em config.js.`);
-  else log(`FosterMCP ${result.feed.version}: downloads ligados.`);
+  if (result.config.previa) log('Modo prévia: faixa de aviso e pedido para os buscadores não listarem o site. No lançamento, troque previa para false em config.js.');
+  if (result.config.downloads) log(`FosterMCP ${result.feed.version}: downloads ligados.`);
+  else log(`Downloads do FosterMCP desligados${result.feed ? '' : ' (ainda sem public/fostermcp/version.json)'}. Para ligar, troque downloads para true em config.js.`);
   if (result.testing.length) log(`Em teste: ${result.testing.join(', ')}.`);
   if (result.soon.length) log(`Em breve: ${result.soon.join(', ')}.`);
   if (result.pendingImages.length) log(`Prints pendentes (${result.pendingImages.length}):\n${result.pendingImages.map(image => `  - public/${image.path}: ${image.alt}`).join('\n')}`);

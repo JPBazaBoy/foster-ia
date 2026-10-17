@@ -53,13 +53,16 @@ test('o contrato recusa campos fora do padrão, links de outros hosts e valores 
   }
 });
 
-test('na prévia o version.json é opcional; fora dela o build exige o arquivo e confere o contrato', async () => {
+test('com downloads: false o version.json é opcional; com downloads: true o build exige o arquivo e confere o contrato', async () => {
   const root = siteCopy();
-  assert.equal(await loadFeed(root, {...config, previa: true}), null);
-  await assert.rejects(loadFeed(root, {...config, previa: false}), error => error instanceof BuildError && /npm run release/.test(error.problems[0]));
+  // A prévia não decide mais: só a chave downloads.
+  for (const previa of [true, false]) {
+    assert.equal(await loadFeed(root, {...config, previa, downloads: false}), null);
+    await assert.rejects(loadFeed(root, {...config, previa, downloads: true}), error => error instanceof BuildError && /npm run release/.test(error.problems[0]));
+  }
   mkdirSync(join(root, 'public/fostermcp'), {recursive: true});
   writeFileSync(join(root, 'public', config.fostermcp.feed), JSON.stringify({...valid(), version: 'v1'}));
-  await assert.rejects(loadFeed(root, {...config, previa: true}), error => error instanceof BuildError && /version: versão no formato/.test(error.problems.join()), 'um arquivo presente sempre é conferido');
+  await assert.rejects(loadFeed(root, {...config, downloads: false}), error => error instanceof BuildError && /version: versão no formato/.test(error.problems.join()), 'um arquivo presente sempre é conferido');
 });
 
 test('o version.json publicado (quando existe) segue o contrato do site e o do app', {skip: !existsSync(REAL) && 'ainda não há version.json real'}, () => {
