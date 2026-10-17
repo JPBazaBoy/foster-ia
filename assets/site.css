@@ -211,6 +211,7 @@ kbd { font-family: var(--sans); }
 .linha-titulo { font-size: 16px; font-weight: 700; }
 .linha-titulo a:hover, .linha-prompt-titulo:hover { text-decoration: underline; text-underline-offset: 3px; }
 .linha p { font-size: 14px; color: var(--texto-3); }
+.selos { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .linha-prompt { display: grid; grid-template-columns: 1fr 130px 90px; gap: 18px; align-items: center; padding: 16px 22px; }
 .linha-prompt q { font-size: 15px; font-weight: 600; quotes: "“" "”"; }
 .linha-prompt-titulo { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); margin-bottom: 3px; }
@@ -428,7 +429,7 @@ kbd { font-family: var(--sans); }
   .item-acoes { max-width: none; }
   .grade-cartoes, .exemplos, .requisitos { grid-template-columns: 1fr; }
   .linha { grid-template-columns: 1fr; gap: 8px; }
-  .linha .selo { justify-self: start; }
+  .linha .selos { justify-self: start; justify-content: flex-start; }
   .linha-prompt { grid-template-columns: 1fr auto; }
   .linha-prompt .fonte-tag { display: none; }
   .linha-tutorial { grid-template-columns: 1fr auto; }

@@ -48,7 +48,7 @@ test('honestidade de plataforma: Gemini e Grok só aparecem como "em breve"', ()
 test('os itens de exemplo têm a situação combinada: em teste, em breve e avançado', () => {
   const expected = {
     'skills/consultas-fostermcp': ['em-teste'], 'skills/apresentacao-cliente': ['em-teste'], 'skills/briefing-reuniao': ['em-teste'], 'skills/resumo-vencimentos': ['em-breve'],
-    'agentes/assistente-pre-reuniao': ['em-teste'], 'agentes/fostermcp-openclaw': ['em-teste', true], 'agentes/fostermcp-hermes': ['em-breve', true],
+    'agentes/assistente-pre-reuniao': ['em-teste'], 'agentes/fostermcp-grokbot': ['em-breve', true], 'agentes/fostermcp-hermes': ['em-breve', true],
   };
   for (const [id, [status, advanced = undefined]] of Object.entries(expected)) {
     assert.equal(byId(id)?.meta.situacao, status, id);

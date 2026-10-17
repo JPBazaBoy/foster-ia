@@ -88,7 +88,7 @@ ${body}
   const platformNames = item => item.meta.plataformas.map(key => PLATFORMS[key].label);
   const families = item => [...new Set(item.meta.plataformas.map(key => PLATFORMS[key].label.replace(/ (Desktop|Code|\(.*\))$/, '')))];
   const firstSentence = text => text.match(/^.*?[.!?](?=\s|$)/)?.[0] || text;
-  const chips = item => `<ul class="plataformas">${item.meta.plataformas.map(key => `<li>${esc(PLATFORMS[key].label)}</li>`).join('')}` +
+  const chips = item => `<ul class="plataformas">${item.meta.plataformas.map(key => `<li${item.meta.situacao === 'em-breve' ? ' class="em-breve"' : ''}>${esc(PLATFORMS[key].label)}</li>`).join('')}` +
     `${(item.meta.plataformasEmBreve || []).map(key => `<li class="em-breve">${esc(PLATFORMS[key].label)} · em breve</li>`).join('')}</ul>`;
   const sourceNames = item => (item.meta.fontes || []).map(key => SOURCES[key].label).join(' + ');
   const filterData = item => {
@@ -137,7 +137,7 @@ ${body}
 </li>`;
   const row = (item, level, {type = false} = {}) => `<li class="linha"${filterData(item)}>
   <div><h${level} class="linha-titulo"><a href="${href(item.url)}">${esc(item.meta.titulo)}</a></h${level}><p>${type ? `${TYPES[item.type].label} · ` : ''}${esc(joinNames(families(item), 'ou'))} · ${esc(firstSentence(item.meta.resumo))}</p></div>
-  ${oneBadge(item)}
+  <span class="selos">${badges(item)}</span>
 </li>`;
   const promptRow = (item, id, {title = false} = {}) => `<li class="linha-prompt"${filterData(item)}>
   <div class="linha-prompt-texto">${title ? `<a class="linha-prompt-titulo" href="${href(item.url)}">${esc(item.meta.titulo)}</a>` : ''}<q id="${id}">${esc(item.prompt)}</q></div>
@@ -300,7 +300,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
 </div>`;
     }
     if (item.type === 'agente' && item.instructions) {
-      const file = ['chatgpt-codex', 'claude-code', 'openclaw', 'hermes'].some(has);
+      const file = ['chatgpt-codex', 'claude-code'].some(has);
       return `<div class="baixar">
   ${copyButton('instrucoes-agente', 'Copiar as instruções', 'botao-escuro')}
   ${file ? `<a class="botao botao-linha" href="${href(`${item.url}AGENTS.md`)}" download>Baixar AGENTS.md</a>` : ''}
@@ -323,7 +323,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
     const ctx = newPage(), {meta} = item, area = areaOf(item);
     const body = sections(item.sections, ctx, item);
     const metaLine = [versionLine(item), item.type === 'app' && meta.compatibilidade ? esc(meta.compatibilidade) : '', item.type === 'tutorial' ? `${esc(meta.assunto)} · ${esc(meta.tempo)}` : ''].filter(Boolean).join(' · ');
-    const notices = [NOTICES[meta.situacao] && ['situacao', NOTICES[meta.situacao]], meta.avancado && ['avancado', 'Avançado: exige instalar programas e editar arquivos de configuração. Se não tiver experiência, peça ajuda antes.']].filter(Boolean);
+    const notices = [NOTICES[meta.situacao] && ['situacao', NOTICES[meta.situacao]], meta.avancado && ['avancado', 'Avançado: exige configuração técnica. Se não tiver experiência, peça ajuda antes.']].filter(Boolean);
     let extra = '';
     if (item.type === 'prompt') extra = `<section class="secao" aria-labelledby="o-prompt"><h2 id="o-prompt">O prompt</h2><div class="caixa-prompt caixa-prompt-grande"><q id="texto-prompt">${esc(item.prompt)}</q>${copyButton('texto-prompt', 'Copiar')}</div><p class="nota">Troque o que está entre [colchetes] antes de enviar.</p></section>`;
     if (item.type === 'agente' && item.instructions) extra = `<details class="arquivo"><summary>Ver as instruções completas</summary><pre id="instrucoes-agente">${esc(item.instructions)}</pre></details>`;
@@ -336,7 +336,7 @@ ${md.tokens(panel.tokens)}</section>`).join('\n');
       <div class="item-titulo"><h1>${esc(meta.titulo)}</h1>${badges(item)}</div>
       <p class="lead">${esc(meta.resumo)}</p>
       <p class="item-meta">${metaLine}</p>
-      ${['tutorial', 'prompt'].includes(item.type) ? '' : `<div class="item-onde"><span class="rotulo">Onde funciona</span>${chips(item)}</div>`}
+      ${['tutorial', 'prompt'].includes(item.type) ? '' : `<div class="item-onde"><span class="rotulo">${meta.situacao === 'em-breve' ? 'Onde vai funcionar' : 'Onde funciona'}</span>${chips(item)}</div>`}
     </div>
     ${actions ? `<div class="item-acoes">${actions}</div>` : ''}
   </header>

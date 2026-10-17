@@ -19,13 +19,13 @@ const ids = Object.fromEntries(Object.entries(html).map(([page, text]) => [page,
 test('gera início, busca, categorias, itens, ajuda e 404, e o version.json de exemplo só na prévia', () => {
   for (const page of ['index.html', '404.html', 'catalogo/index.html', 'ajuda/index.html', 'apps/index.html', 'skills/index.html', 'agentes/index.html', 'prompts/index.html',
     'tutoriais/index.html', 'apps/fostermcp/index.html', 'skills/apresentacao-cliente/index.html', 'skills/resumo-vencimentos/index.html',
-    'agentes/fostermcp-openclaw/index.html', 'agentes/fostermcp-hermes/index.html', 'prompts/preparar-reuniao/index.html', 'tutoriais/primeiros-passos/index.html'])
+    'agentes/fostermcp-grokbot/index.html', 'agentes/fostermcp-hermes/index.html', 'prompts/preparar-reuniao/index.html', 'tutoriais/primeiros-passos/index.html'])
     assert.ok(pages.includes(page), page);
   assert.equal(result.example, true);
   assert.equal(existsSync(join(out, 'fostermcp/version.json')), false, 'o exemplo nunca é publicado como version.json');
   assert.match(html['apps/fostermcp/index.html'], /Prévia: versão, data e tamanhos de exemplo/);
   assert.ok(existsSync(join(out, '.nojekyll')));
-  assert.deepEqual(result.soon.sort(), ['agentes/fostermcp-hermes', 'skills/resumo-vencimentos']);
+  assert.deepEqual(result.soon.sort(), ['agentes/fostermcp-grokbot', 'agentes/fostermcp-hermes', 'skills/resumo-vencimentos']);
 });
 
 test('segue o formato do portal: cabeçalho com assinatura e navegação, selos, abas com "em breve" e passo a passo', () => {
@@ -37,7 +37,9 @@ test('segue o formato do portal: cabeçalho com assinatura e navegação, selos,
   assert.match(app, /<ol class="passos">/);
   assert.match(app, /class="smartscreen"/);
   assert.match(app, /<nav class="sumario" aria-label="Nesta página">/);
-  assert.match(html['agentes/fostermcp-openclaw/index.html'], /<span class="selo selo-teste">Em teste<\/span><span class="selo selo-avancado">Avançado<\/span>/);
+  // Agentes em breve e avançados mostram os dois selos, inclusive nas listas, e não oferecem instruções para copiar.
+  for (const page of ['agentes/fostermcp-grokbot/index.html', 'agentes/index.html', 'index.html']) assert.match(html[page], /<span class="selo selo-breve">Em breve<\/span><span class="selo selo-avancado">Avançado<\/span>/, page);
+  assert.match(html['agentes/fostermcp-grokbot/index.html'], /Onde vai funcionar/);
   assert.match(html['agentes/fostermcp-hermes/index.html'], /Ainda não disponível/);
   assert.doesNotMatch(html['agentes/fostermcp-hermes/index.html'], /Copiar as instruções/);
   assert.match(html['index.html'], /Primeira vez aqui\? Siga esta ordem/);
@@ -106,9 +108,8 @@ test('cada skill com SKILL.md vira um .zip com a pasta na raiz; os agentes viram
     assert.equal(entries[1].data.toString('utf8'), read(join(root, `catalog/skills/${slug}/SKILL.md`)));
   }
   assert.equal(existsSync(join(out, 'skills/resumo-vencimentos/resumo-vencimentos.zip')), false, 'skill em breve não tem .zip');
-  for (const slug of ['assistente-pre-reuniao', 'fostermcp-openclaw'])
-    assert.equal(read(join(out, `agentes/${slug}/AGENTS.md`)), `${read(join(root, `catalog/agentes/${slug}/instrucoes.md`)).trim()}\n`);
-  assert.equal(existsSync(join(out, 'agentes/fostermcp-hermes/AGENTS.md')), false);
+  assert.equal(read(join(out, 'agentes/assistente-pre-reuniao/AGENTS.md')), `${read(join(root, 'catalog/agentes/assistente-pre-reuniao/instrucoes.md')).trim()}\n`);
+  for (const slug of ['fostermcp-grokbot', 'fostermcp-hermes']) assert.equal(existsSync(join(out, `agentes/${slug}/AGENTS.md`)), false, slug);
 });
 
 test('os botões de download usam o instalador mais recente do repositório público', async () => {

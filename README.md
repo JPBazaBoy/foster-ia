@@ -56,7 +56,7 @@ O caminho é sempre o mesmo:
 
 **Skill** (pasta `catalog/skills/<nome>/`): `pagina.md` com O que faz, Exemplo de resultado, Onde funciona, Instalação, Como usar e Problemas comuns, e o `SKILL.md` no padrão Agent Skills. O `name` do `SKILL.md` é **igual ao nome da pasta** (minúsculas, números e hífens, sem "claude" nem "anthropic") e a `description` diz o que a skill faz e **quando** usar, em até 500 caracteres. Na construção, a pasta (menos `pagina.md`) vira `<nome>.zip`, com a pasta na raiz, como o Claude pede. Skill em breve pode ficar sem `SKILL.md`.
 
-**Modelo de agente** (pasta `catalog/agentes/<nome>/`): `pagina.md` com Para que serve, O que precisa e Passo a passo (uma aba por plataforma), e `instrucoes.md` com até 8000 caracteres, que vira o AGENTS.md para baixar. Agentes autônomos levam `avancado: true`.
+**Modelo de agente** (pasta `catalog/agentes/<nome>/`): `pagina.md` com Para que serve, O que precisa e Passo a passo (uma aba por plataforma), e `instrucoes.md` com até 8000 caracteres, que vira o AGENTS.md para baixar. Agentes autônomos levam `avancado: true`. Agente em breve pode ficar sem `instrucoes.md`.
 
 **Prompt** (`catalog/prompts/`): um pedido curto e direto logo abaixo de `## Prompt` (até 600 caracteres; use `[colchetes]` no que a pessoa troca) e a seção Quando usar. Liste em `fontes` o que ele consulta (`atlas`, `whatsapp`, `email`): é o filtro da biblioteca.
 
@@ -73,7 +73,7 @@ O caminho é sempre o mesmo:
 | `titulo` | sim | Nome curto, até 80 caracteres. |
 | `resumo` | sim | Até 220 caracteres. A primeira frase diz o que o item é. |
 | `situacao` | sim | `disponivel`, `em-teste` ou `em-breve`. Vira o selo Disponível, Em teste ou Em breve. |
-| `plataformas` | sim | Onde funciona hoje: `claude-desktop`, `chatgpt-codex` (aba Codex do app do ChatGPT), `chatgpt` (Projetos e GPTs), `cursor`, `claude-code`, `openclaw`, `hermes`. |
+| `plataformas` | sim | Onde funciona hoje: `claude-desktop`, `chatgpt-codex` (aba Codex do app do ChatGPT), `chatgpt` (Projetos e GPTs), `cursor`, `claude-code`, `grokbot`, `hermes`. Em itens em breve, são as plataformas previstas (aparecem tracejadas). |
 | `atualizado` | sim | Data da última revisão, `AAAA-MM-DD`. |
 | `plataformasEmBreve` | não | Plataformas que ainda não funcionam e aparecem tracejadas, como `[gemini, grok]`. Nunca prometa o que não funciona. |
 | `avancado` | não | `true` mostra o selo Avançado e o aviso de que exige configuração técnica. |
@@ -92,7 +92,7 @@ O caminho é sempre o mesmo:
 ## Seções, abas e blocos
 
 - Cada `## Título` vira uma seção, com o índice "Nesta página" ao lado.
-- Subtítulos `###` com nome de plataforma (Claude Desktop, ChatGPT (aba Codex), ChatGPT (Projetos e GPTs), Cursor, Claude Code, OpenClaw, Hermes Agent), de sistema (Windows, Mac) ou de fonte (Atlas, WhatsApp, E-mail) viram **abas**. Cada plataforma de `plataformas` precisa ter a sua aba; as de `plataformasEmBreve` aparecem ao lado, tracejadas.
+- Subtítulos `###` com nome de plataforma (Claude Desktop, ChatGPT (aba Codex), ChatGPT (Projetos e GPTs), Cursor, Claude Code, GrokBot, Hermes Agent), de sistema (Windows, Mac) ou de fonte (Atlas, WhatsApp, E-mail) viram **abas**. Cada plataforma de `plataformas` precisa ter a sua aba; as de `plataformasEmBreve` aparecem ao lado, tracejadas.
 - Listas numeradas viram o passo a passo em linha do tempo. Comece cada passo com o título em negrito: `1. **Baixe o instalador.** Clique em…`.
 - Em "Problemas comuns" e "Perguntas frequentes", cada `###` é uma pergunta com a resposta embaixo.
 - Avisos: uma linha `> [!WARNING]` (ou `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!CAUTION]`) seguida do texto com `> ` no começo.

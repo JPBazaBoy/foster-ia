@@ -28,7 +28,7 @@ export const PLATFORMS = {
   'claude-code': {label: 'Claude Code', aliases: []},
   gemini: {label: 'Gemini', aliases: []},
   grok: {label: 'Grok', aliases: []},
-  openclaw: {label: 'OpenClaw', aliases: []},
+  grokbot: {label: 'GrokBot', aliases: []},
   hermes: {label: 'Hermes Agent', aliases: ['hermes']},
 };
 export const SYSTEMS = {
